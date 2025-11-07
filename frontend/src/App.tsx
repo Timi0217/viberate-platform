@@ -45,6 +45,7 @@ function App() {
     console.log('User effect triggered:', { isAuthenticated, userType: user?.user_type });
     if (isAuthenticated && user?.user_type === 'researcher') {
       console.log('Loading connection and projects...');
+      setError(''); // Clear any previous errors
       loadConnection().catch(err => console.log('No connection yet:', err));
       loadProjects().catch(err => console.log('No projects yet:', err));
     }
@@ -133,14 +134,21 @@ function App() {
 
   const loadConnection = async () => {
     try {
+      console.log('Loading connection...');
       const data = await labelStudioAPI.getConnection();
+      console.log('Connection data received:', data);
+
       if (Array.isArray(data) && data.length > 0) {
         setConnection(data[0]);
-      } else if (!Array.isArray(data)) {
+      } else if (data && !Array.isArray(data) && data.id) {
         setConnection(data);
+      } else {
+        console.log('No valid connection found');
+        setConnection(null);
       }
     } catch (err) {
-      console.log('No connection yet');
+      console.log('No connection yet:', err);
+      setConnection(null);
     }
   };
 
@@ -387,7 +395,7 @@ function App() {
         <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h2 style={{ marginTop: 0 }}>Label Studio Integration</h2>
 
-          {!connection ? (
+          {!connection || !connection.labelstudio_url ? (
             <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px', border: '2px dashed #ddd' }}>
               <h3 style={{ marginTop: 0 }}>Connect to Label Studio</h3>
               <form onSubmit={handleCreateConnection}>
