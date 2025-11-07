@@ -161,19 +161,26 @@ function App() {
 
   const loadProjects = async () => {
     try {
+      console.log('Loading projects...');
       const data = await labelStudioAPI.listProjects();
-      setProjects(data);
+      console.log('Projects loaded:', data);
+      setProjects(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load projects:', err);
+      setProjects([]);
     }
   };
 
   const loadAvailableProjects = async () => {
     try {
+      console.log('Loading available projects...');
       const data = await labelStudioAPI.getAvailableProjects();
-      setAvailableProjects(data);
+      console.log('Available projects loaded:', data);
+      setAvailableProjects(Array.isArray(data) ? data : []);
     } catch (err: any) {
+      console.error('Failed to load available projects:', err);
       setError(err.response?.data?.error || 'Failed to load available projects');
+      setAvailableProjects([]);
     }
   };
 
@@ -435,7 +442,7 @@ function App() {
                   </button>
                 </div>
 
-                {projects.length === 0 ? (
+                {!projects || projects.length === 0 ? (
                   <p>No projects imported yet. Click "Import New Project" to get started.</p>
                 ) : (
                   <div>
@@ -464,7 +471,7 @@ function App() {
                 )}
               </div>
 
-              {availableProjects.length > 0 && (
+              {availableProjects && availableProjects.length > 0 && (
                 <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
                   <h3>Available Projects to Import</h3>
                   {availableProjects.map((project) => (
