@@ -1,0 +1,433 @@
+import { useState, useEffect } from 'react';
+import {
+  authAPI,
+  labelStudioAPI,
+  tasksAPI,
+  type User,
+  type LabelStudioConnection,
+  type LabelStudioProject,
+  type Task
+} from './api';
+
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [view, setView] = useState<'login' | 'register'>('login');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Auth state
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [registerData, setRegisterData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    user_type: 'researcher' as 'researcher' | 'annotator',
+  });
+
+  // Label Studio state
+  const [connection, setConnection] = useState<LabelStudioConnection | null>(null);
+  const [connectionForm, setConnectionForm] = useState({
+    labelstudio_url: 'https://app.heartex.com',
+    api_token: '',
+  });
+  const [projects, setProjects] = useState<LabelStudioProject[]>([]);
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.user_type === 'researcher') {
+      loadConnection();
+      loadProjects();
+    }
+  }, [isAuthenticated, user]);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        const userData = await authAPI.getProfile();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (err) {
+        localStorage.removeItem('authToken');
+      }
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const response = await authAPI.login(loginData.username, loginData.password);
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.response?.data?.detail || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const response = await authAPI.register(registerData);
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.response?.data?.detail || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsAuthenticated(false);
+      setUser(null);
+      localStorage.removeItem('authToken');
+    }
+  };
+
+  const loadConnection = async () => {
+    try {
+      const data = await labelStudioAPI.getConnection();
+      if (Array.isArray(data) && data.length > 0) {
+        setConnection(data[0]);
+      } else if (!Array.isArray(data)) {
+        setConnection(data);
+      }
+    } catch (err) {
+      console.log('No connection yet');
+    }
+  };
+
+  const handleCreateConnection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const newConnection = await labelStudioAPI.createConnection(connectionForm);
+      setConnection(newConnection);
+      loadProjects();
+    } catch (err: any) {
+      setError(err.response?.data?.api_token?.[0] || err.response?.data?.error || 'Failed to connect');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProjects = async () => {
+    try {
+      const data = await labelStudioAPI.listProjects();
+      setProjects(data);
+    } catch (err) {
+      console.error('Failed to load projects:', err);
+    }
+  };
+
+  const loadAvailableProjects = async () => {
+    try {
+      const data = await labelStudioAPI.getAvailableProjects();
+      setAvailableProjects(data);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to load available projects');
+    }
+  };
+
+  const handleImportProject = async (projectId: number) => {
+    setLoading(true);
+    try {
+      await labelStudioAPI.importProject(projectId);
+      loadProjects();
+      loadAvailableProjects();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to import project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSyncProject = async (projectId: number) => {
+    try {
+      await labelStudioAPI.syncProject(projectId);
+      loadProjects();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to sync project');
+    }
+  };
+
+  const loadTasks = async () => {
+    try {
+      const data = await tasksAPI.list();
+      setTasks(data);
+    } catch (err) {
+      console.error('Failed to load tasks:', err);
+    }
+  };
+
+  // Login/Register View
+  if (!isAuthenticated) {
+    return (
+      <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+        <h1>Viberate Platform</h1>
+
+        {view === 'login' ? (
+          <div>
+            <h2>Login</h2>
+            <form onSubmit={handleLogin}>
+              <div style={{ marginBottom: '15px' }}>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={loginData.username}
+                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+                  style={{ width: '100%', padding: '10px' }}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  style={{ width: '100%', padding: '10px' }}
+                  required
+                />
+              </div>
+              {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+            <p style={{ marginTop: '15px', textAlign: 'center' }}>
+              Don't have an account?{' '}
+              <a href="#" onClick={() => setView('register')}>Register</a>
+            </p>
+          </div>
+        ) : (
+          <div>
+            <h2>Register</h2>
+            <form onSubmit={handleRegister}>
+              <div style={{ marginBottom: '15px' }}>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={registerData.username}
+                  onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                  style={{ width: '100%', padding: '10px' }}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={registerData.email}
+                  onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                  style={{ width: '100%', padding: '10px' }}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={registerData.password}
+                  onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                  style={{ width: '100%', padding: '10px' }}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>Account Type:</label>
+                <select
+                  value={registerData.user_type}
+                  onChange={(e) => setRegisterData({ ...registerData, user_type: e.target.value as 'researcher' | 'annotator' })}
+                  style={{ width: '100%', padding: '10px' }}
+                >
+                  <option value="researcher">Researcher (Customer)</option>
+                  <option value="annotator">Annotator</option>
+                </select>
+              </div>
+              {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ width: '100%', padding: '10px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                {loading ? 'Registering...' : 'Register'}
+              </button>
+            </form>
+            <p style={{ marginTop: '15px', textAlign: 'center' }}>
+              Already have an account?{' '}
+              <a href="#" onClick={() => setView('login')}>Login</a>
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Main Dashboard
+  return (
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1>Viberate Platform</h1>
+        <div>
+          <span style={{ marginRight: '15px' }}>
+            Welcome, {user?.username} ({user?.user_type})
+          </span>
+          <button onClick={handleLogout} style={{ padding: '8px 16px' }}>Logout</button>
+        </div>
+      </div>
+
+      {error && (
+        <div style={{ padding: '15px', background: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '20px' }}>
+          {error}
+        </div>
+      )}
+
+      {user?.user_type === 'researcher' ? (
+        <div>
+          <h2>Label Studio Integration</h2>
+
+          {!connection ? (
+            <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px' }}>
+              <h3>Connect to Label Studio</h3>
+              <form onSubmit={handleCreateConnection}>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>Label Studio URL:</label>
+                  <input
+                    type="url"
+                    placeholder="https://app.heartex.com"
+                    value={connectionForm.labelstudio_url}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, labelstudio_url: e.target.value })}
+                    style={{ width: '100%', padding: '10px' }}
+                    required
+                  />
+                </div>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>API Token:</label>
+                  <input
+                    type="text"
+                    placeholder="Your Label Studio API Token"
+                    value={connectionForm.api_token}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, api_token: e.target.value })}
+                    style={{ width: '100%', padding: '10px' }}
+                    required
+                  />
+                  <small style={{ color: '#666' }}>
+                    Get your API token from Label Studio: Account & Settings → Access Token
+                  </small>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                  {loading ? 'Connecting...' : 'Connect'}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div>
+              <div style={{ padding: '15px', background: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '20px' }}>
+                ✓ Connected to Label Studio: {connection.labelstudio_url}
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h3>Your Projects</h3>
+                  <button
+                    onClick={loadAvailableProjects}
+                    style={{ padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Import New Project
+                  </button>
+                </div>
+
+                {projects.length === 0 ? (
+                  <p>No projects imported yet. Click "Import New Project" to get started.</p>
+                ) : (
+                  <div>
+                    {projects.map((project) => (
+                      <div key={project.id} style={{ padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '15px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 10px 0' }}>{project.title}</h4>
+                            <p style={{ margin: '0 0 10px 0', color: '#666' }}>{project.description}</p>
+                            <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
+                              <span>Tasks: {project.total_tasks}</span>
+                              <span>Completed: {project.completed_tasks}</span>
+                              <span>Progress: {project.completion_percentage}%</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleSyncProject(project.id)}
+                            style={{ padding: '6px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            Sync Tasks
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {availableProjects.length > 0 && (
+                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
+                  <h3>Available Projects to Import</h3>
+                  {availableProjects.map((project) => (
+                    <div key={project.id} style={{ padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '15px', background: 'white' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <h4 style={{ margin: '0 0 5px 0' }}>{project.title}</h4>
+                          <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+                            {project.task_number} tasks
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleImportProject(project.id)}
+                          disabled={loading}
+                          style={{ padding: '6px 12px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                          Import
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div>
+          <h2>Annotator Dashboard</h2>
+          <p>Annotator features coming soon...</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;

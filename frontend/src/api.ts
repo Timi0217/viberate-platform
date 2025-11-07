@@ -1,0 +1,157 @@
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests if available
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
+  }
+  return config;
+});
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  user_type: 'researcher' | 'annotator';
+  rating?: number;
+  tasks_completed?: number;
+}
+
+export interface LabelStudioConnection {
+  id: number;
+  labelstudio_url: string;
+  is_verified: boolean;
+  last_verified_at: string;
+  created_at: string;
+}
+
+export interface LabelStudioProject {
+  id: number;
+  labelstudio_project_id: number;
+  title: string;
+  description: string;
+  researcher_username: string;
+  is_active: boolean;
+  total_tasks: number;
+  completed_tasks: number;
+  completion_percentage: number;
+  last_synced_at: string;
+  created_at: string;
+}
+
+export interface Task {
+  id: number;
+  labelstudio_task_id: number;
+  project: number;
+  project_title: string;
+  data: any;
+  status: string;
+  difficulty: string;
+  reward_points: number;
+  created_at: string;
+}
+
+// Auth API
+export const authAPI = {
+  login: async (username: string, password: string) => {
+    const response = await api.post('/api/auth/login/', { username, password });
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  },
+  
+  register: async (userData: {
+    username: string;
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+    user_type?: 'researcher' | 'annotator';
+  }) => {
+    const response = await api.post('/api/auth/register/', userData);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    return response.data;
+  },
+  
+  logout: async () => {
+    await api.post('/api/auth/logout/');
+    localStorage.removeItem('authToken');
+  },
+  
+  getProfile: async () => {
+    const response = await api.get<User>('/api/auth/profile/');
+    return response.data;
+  },
+};
+
+// Label Studio Connection API
+export const labelStudioAPI = {
+  // Connections
+  getConnection: async () => {
+    const response = await api.get<LabelStudioConnection>('/api/labelstudio/connections/');
+    return response.data;
+  },
+
+  createConnection: async (connectionData: { labelstudio_url: string; api_token: string }) => {
+    const response = await api.post<LabelStudioConnection>('/api/labelstudio/connections/', connectionData);
+    return response.data;
+  },
+
+  verifyConnection: async (id: number) => {
+    const response = await api.post(`/api/labelstudio/connections/${id}/verify/`);
+    return response.data;
+  },
+
+  // Projects
+  listProjects: async () => {
+    const response = await api.get<LabelStudioProject[]>('/api/labelstudio/projects/');
+    return response.data;
+  },
+
+  getAvailableProjects: async () => {
+    const response = await api.get('/api/labelstudio/projects/available_projects/');
+    return response.data;
+  },
+
+  importProject: async (projectId: number) => {
+    const response = await api.post('/api/labelstudio/projects/import_project/', {
+      labelstudio_project_id: projectId
+    });
+    return response.data;
+  },
+
+  syncProject: async (id: number) => {
+    const response = await api.post(`/api/labelstudio/projects/${id}/sync/`);
+    return response.data;
+  },
+};
+
+// Tasks API
+export const tasksAPI = {
+  list: async () => {
+    const response = await api.get<Task[]>('/api/tasks/');
+    return response.data;
+  },
+
+  get: async (id: number) => {
+    const response = await api.get<Task>(`/api/tasks/${id}/`);
+    return response.data;
+  },
+};
+
+export default api;
