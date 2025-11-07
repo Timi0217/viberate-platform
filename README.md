@@ -1,6 +1,26 @@
-# Viberate - Label Studio Integration Platform
+# Viberate - Label Studio Integration Platform 🎯
 
 Viberate is a crowdsourcing platform that integrates with Label Studio to distribute annotation tasks to a network of annotators.
+
+## 🚀 Live Deployments
+
+- **Frontend**: [https://frontend-kwjhu80k4-timidayokayode-gmailcoms-projects.vercel.app](https://frontend-kwjhu80k4-timidayokayode-gmailcoms-projects.vercel.app)
+- **Backend API**: [https://django-production-3340.up.railway.app](https://django-production-3340.up.railway.app)
+- **GitHub**: [https://github.com/Timi0217/viberate-platform](https://github.com/Timi0217/viberate-platform)
+
+![Backend Status](https://img.shields.io/badge/Backend-Live-success)
+![Frontend Status](https://img.shields.io/badge/Frontend-Live-success)
+![API Tests](https://img.shields.io/badge/API%20Tests-7%2F7%20Passing-success)
+![Database](https://img.shields.io/badge/Database-PostgreSQL-blue)
+
+## 🎯 Quick Start
+
+1. **Try the live app**: Visit [the frontend](https://frontend-kwjhu80k4-timidayokayode-gmailcoms-projects.vercel.app)
+2. **Register** as a Researcher or Annotator
+3. **Connect Label Studio** using your API token from [app.heartex.com](https://app.heartex.com)
+4. **Import a project** and sync tasks to the database
+
+📚 For detailed instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 
 ## Features
 
