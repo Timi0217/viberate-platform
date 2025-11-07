@@ -22,6 +22,7 @@ function App() {
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',
     user_type: 'researcher' as 'researcher' | 'annotator',
   });
 
@@ -41,8 +42,8 @@ function App() {
 
   useEffect(() => {
     if (isAuthenticated && user?.user_type === 'researcher') {
-      loadConnection();
-      loadProjects();
+      loadConnection().catch(err => console.log('No connection yet'));
+      loadProjects().catch(err => console.log('No projects yet'));
     }
   }, [isAuthenticated, user]);
 
@@ -78,12 +79,33 @@ function App() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate password confirmation
+    if (registerData.password !== registerData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (registerData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await authAPI.register(registerData);
+      const { confirmPassword, ...dataToSend } = registerData;
+      const response = await authAPI.register(dataToSend);
       setUser(response.user);
       setIsAuthenticated(true);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.response?.data?.detail || 'Registration failed');
+      const errorMsg = err.response?.data?.error
+        || err.response?.data?.detail
+        || err.response?.data?.username?.[0]
+        || err.response?.data?.email?.[0]
+        || err.response?.data?.password?.[0]
+        || 'Registration failed';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -257,6 +279,16 @@ function App() {
                 />
               </div>
               <div style={{ marginBottom: '15px' }}>
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={registerData.confirmPassword}
+                  onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                  style={{ width: '100%', padding: '10px' }}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
                 <label style={{ display: 'block', marginBottom: '5px' }}>Account Type:</label>
                 <select
                   value={registerData.user_type}
@@ -288,14 +320,16 @@ function App() {
 
   // Main Dashboard
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1>Viberate Platform</h1>
-        <div>
-          <span style={{ marginRight: '15px' }}>
-            Welcome, {user?.username} ({user?.user_type})
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', minHeight: '100vh', background: '#f5f5f5' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h1 style={{ margin: 0 }}>Viberate Platform</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '14px', color: '#666' }}>
+            {user?.username} ({user?.user_type})
           </span>
-          <button onClick={handleLogout} style={{ padding: '8px 16px' }}>Logout</button>
+          <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            Logout
+          </button>
         </div>
       </div>
 
@@ -306,12 +340,12 @@ function App() {
       )}
 
       {user?.user_type === 'researcher' ? (
-        <div>
-          <h2>Label Studio Integration</h2>
+        <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h2 style={{ marginTop: 0 }}>Label Studio Integration</h2>
 
           {!connection ? (
-            <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px' }}>
-              <h3>Connect to Label Studio</h3>
+            <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px', border: '2px dashed #ddd' }}>
+              <h3 style={{ marginTop: 0 }}>Connect to Label Studio</h3>
               <form onSubmit={handleCreateConnection}>
                 <div style={{ marginBottom: '15px' }}>
                   <label style={{ display: 'block', marginBottom: '5px' }}>Label Studio URL:</label>
@@ -421,9 +455,12 @@ function App() {
           )}
         </div>
       ) : (
-        <div>
-          <h2>Annotator Dashboard</h2>
-          <p>Annotator features coming soon...</p>
+        <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
+          <h2 style={{ marginTop: 0 }}>Annotator Dashboard</h2>
+          <p style={{ color: '#666', fontSize: '16px' }}>Annotator features coming in the next sprint...</p>
+          <p style={{ color: '#999', fontSize: '14px', marginTop: '20px' }}>
+            You'll be able to view and complete annotation tasks assigned to you.
+          </p>
         </div>
       )}
     </div>
