@@ -394,8 +394,10 @@ function App() {
       {user?.user_type === 'researcher' ? (
         <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h2 style={{ marginTop: 0 }}>Label Studio Integration</h2>
+          {console.log('Connection state:', connection)}
+          {console.log('Should show form?', !connection || !connection.labelstudio_url || !connection.id)}
 
-          {!connection || !connection.labelstudio_url ? (
+          {!connection || !connection.labelstudio_url || !connection.id ? (
             <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px', border: '2px dashed #ddd' }}>
               <h3 style={{ marginTop: 0 }}>Connect to Label Studio</h3>
               <form onSubmit={handleCreateConnection}>
@@ -435,8 +437,17 @@ function App() {
             </div>
           ) : (
             <div>
-              <div style={{ padding: '15px', background: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '20px' }}>
-                ✓ Connected to Label Studio: {connection.labelstudio_url}
+              <div style={{ padding: '15px', background: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>✓ Connected to Label Studio: {connection.labelstudio_url}</span>
+                <button
+                  onClick={() => {
+                    setConnection(null);
+                    setError('');
+                  }}
+                  style={{ padding: '6px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Disconnect
+                </button>
               </div>
 
               <div style={{ marginBottom: '30px' }}>
