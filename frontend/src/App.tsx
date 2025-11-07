@@ -14,6 +14,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Auth state
@@ -41,23 +42,30 @@ function App() {
   }, []);
 
   useEffect(() => {
+    console.log('User effect triggered:', { isAuthenticated, userType: user?.user_type });
     if (isAuthenticated && user?.user_type === 'researcher') {
-      loadConnection().catch(err => console.log('No connection yet'));
-      loadProjects().catch(err => console.log('No projects yet'));
+      console.log('Loading connection and projects...');
+      loadConnection().catch(err => console.log('No connection yet:', err));
+      loadProjects().catch(err => console.log('No projects yet:', err));
     }
   }, [isAuthenticated, user]);
 
   const checkAuth = async () => {
+    console.log('Checking authentication...');
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
+        console.log('Token found, fetching profile...');
         const userData = await authAPI.getProfile();
+        console.log('Profile received:', userData);
         setUser(userData);
         setIsAuthenticated(true);
       } catch (err) {
+        console.error('Auth check failed:', err);
         localStorage.removeItem('authToken');
       }
     }
+    setPageLoading(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -200,6 +208,32 @@ function App() {
     }
   };
 
+  // Loading state
+  if (pageLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: '#f5f5f5'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            border: '5px solid #f3f3f3',
+            borderTop: '5px solid #007bff',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <p style={{ color: '#666' }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Login/Register View
   if (!isAuthenticated) {
     return (
@@ -319,10 +353,13 @@ function App() {
   }
 
   // Main Dashboard
-  return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', minHeight: '100vh', background: '#f5f5f5' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h1 style={{ margin: 0 }}>Viberate Platform</h1>
+  console.log('Rendering dashboard. User:', user);
+
+  try {
+    return (
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', minHeight: '100vh', background: '#f5f5f5' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h1 style={{ margin: 0 }}>Viberate Platform</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '14px', color: '#666' }}>
             {user?.username} ({user?.user_type})
@@ -464,7 +501,22 @@ function App() {
         </div>
       )}
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('Dashboard rendering error:', error);
+    return (
+      <div style={{ maxWidth: '600px', margin: '50px auto', padding: '30px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h2 style={{ color: '#dc3545' }}>Something went wrong</h2>
+        <p>Please try refreshing the page or logging out and back in.</p>
+        <button onClick={() => {
+          localStorage.removeItem('authToken');
+          window.location.reload();
+        }} style={{ marginTop: '20px', padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Logout and Reload
+        </button>
+      </div>
+    );
+  }
 }
 
 export default App;
