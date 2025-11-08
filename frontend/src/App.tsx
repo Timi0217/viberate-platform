@@ -363,17 +363,6 @@ function App() {
                   required
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label">Account Type</label>
-                <select
-                  className="form-select"
-                  value={registerData.user_type}
-                  onChange={(e) => setRegisterData({ ...registerData, user_type: e.target.value as 'researcher' | 'annotator' })}
-                >
-                  <option value="researcher">Researcher (Customer)</option>
-                  <option value="annotator">Annotator</option>
-                </select>
-              </div>
               {error && <div className="error-message">⚠️ {error}</div>}
               <button
                 type="submit"
