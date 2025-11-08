@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { initOnRamp } from '@coinbase/cbpay-js';
+import { initOnRamp, CBPayInstanceType } from '@coinbase/cbpay-js';
 
 interface CoinbaseOnrampProps {
   walletAddress: string;
@@ -7,23 +7,20 @@ interface CoinbaseOnrampProps {
 }
 
 export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps) {
-  const [onrampInstance, setOnrampInstance] = useState<ReturnType<typeof initOnRamp> | null>(null);
+  const [onrampInstance, setOnrampInstance] = useState<CBPayInstanceType | null>(null);
 
   useEffect(() => {
-    // Initialize Coinbase Onramp
-    const instance = initOnRamp({
+    // Initialize Coinbase Onramp with callback pattern
+    initOnRamp({
       appId: import.meta.env.VITE_COINBASE_APP_ID || 'viberate-demo',
       widgetParameters: {
-        destinationWallets: [{
-          address: walletAddress,
-          blockchains: ['base'],
-          assets: ['USDC']
-        }],
-        defaultAsset: 'USDC',
-        defaultNetwork: 'base',
+        addresses: { [walletAddress]: ['base'] },
+        assets: ['USDC'],
       },
-      experienceLoggedIn: 'embedded',
+      experienceLoggedIn: 'popup',
       experienceLoggedOut: 'popup',
+      closeOnExit: true,
+      closeOnSuccess: true,
       onSuccess: () => {
         console.log('Coinbase Onramp success!');
         if (onSuccess) onSuccess();
@@ -34,9 +31,17 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
       onEvent: (event) => {
         console.log('Coinbase Onramp event:', event);
       },
+    }, (error, instance) => {
+      if (error) {
+        console.error('Failed to initialize Coinbase Onramp:', error);
+        return;
+      }
+      setOnrampInstance(instance);
     });
 
-    setOnrampInstance(instance);
+    return () => {
+      onrampInstance?.destroy();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress]);
 

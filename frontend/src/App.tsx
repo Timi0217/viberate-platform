@@ -9,6 +9,7 @@ import {
   type LabelStudioProject,
   type Task
 } from './api';
+import { CoinbaseOnramp } from './CoinbaseOnramp';
 import './App.css';
 
 function App() {
@@ -442,12 +443,10 @@ function App() {
                 >
                   🔄 Refresh
                 </button>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => alert('Wallet Address: ' + user.base_wallet_address + '\n\nSend USDC on Base network to this address to fund your account.')}
-                >
-                  💳 Fund Account
-                </button>
+                <CoinbaseOnramp
+                  walletAddress={user.base_wallet_address}
+                  onSuccess={refreshBalance}
+                />
               </div>
             )}
           </div>
