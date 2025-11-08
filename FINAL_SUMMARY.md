@@ -443,4 +443,6 @@ In this session, we:
 
 Built with ❤️ using Django, React, Label Studio, Railway, and Vercel
 
+**Note**: Railway is now connected to GitHub for automatic deployments. Every push to `master` will trigger a new deployment.
+
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
