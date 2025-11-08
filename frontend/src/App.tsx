@@ -9,6 +9,7 @@ import {
   type Task
 } from './api';
 import { CoinbaseOnramp } from './CoinbaseOnramp';
+import './App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -240,24 +241,10 @@ function App() {
   // Loading state
   if (pageLoading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: '#f5f5f5'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '5px solid #f3f3f3',
-            borderTop: '5px solid #007bff',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }}></div>
-          <p style={{ color: '#666' }}>Loading...</p>
+      <div className="loading-container">
+        <div className="loading-content">
+          <div className="spinner"></div>
+          <p className="loading-text">Loading Viberate...</p>
         </div>
       </div>
     );
@@ -266,117 +253,133 @@ function App() {
   // Login/Register View
   if (!isAuthenticated) {
     return (
-      <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-        <h1>Viberate Platform</h1>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-logo">
+            <div className="auth-logo-icon">🎯</div>
+            <h1 className="auth-title">
+              {view === 'login' ? 'Welcome Back' : 'Join Viberate'}
+            </h1>
+            <p className="auth-subtitle">
+              {view === 'login'
+                ? 'Sign in to your account to continue'
+                : 'Create your account to get started'}
+            </p>
+          </div>
 
-        {view === 'login' ? (
-          <div>
-            <h2>Login</h2>
+          {view === 'login' ? (
             <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="form-group">
+                <label className="form-label">Username</label>
                 <input
                   type="text"
-                  placeholder="Username"
+                  className="form-input"
+                  placeholder="Enter your username"
                   value={loginData.username}
                   onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                  style={{ width: '100%', padding: '10px' }}
                   required
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="form-group">
+                <label className="form-label">Password</label>
                 <input
                   type="password"
-                  placeholder="Password"
+                  className="form-input"
+                  placeholder="Enter your password"
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  style={{ width: '100%', padding: '10px' }}
                   required
                 />
               </div>
-              {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
+              {error && <div className="error-message">⚠️ {error}</div>}
               <button
                 type="submit"
                 disabled={loading}
-                style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                className="btn btn-primary"
               >
-                {loading ? 'Logging in...' : 'Login'}
+                {loading ? 'Signing in...' : 'Sign In'}
               </button>
+              <div className="auth-switch">
+                Don't have an account?{' '}
+                <a className="auth-link" onClick={() => { setView('register'); setError(''); }}>
+                  Create one
+                </a>
+              </div>
             </form>
-            <p style={{ marginTop: '15px', textAlign: 'center' }}>
-              Don't have an account?{' '}
-              <a href="#" onClick={() => setView('register')}>Register</a>
-            </p>
-          </div>
-        ) : (
-          <div>
-            <h2>Register</h2>
+          ) : (
             <form onSubmit={handleRegister}>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="form-group">
+                <label className="form-label">Username</label>
                 <input
                   type="text"
-                  placeholder="Username"
+                  className="form-input"
+                  placeholder="Choose a username"
                   value={registerData.username}
                   onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                  style={{ width: '100%', padding: '10px' }}
                   required
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
                 <input
                   type="email"
-                  placeholder="Email"
+                  className="form-input"
+                  placeholder="your@email.com"
                   value={registerData.email}
                   onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                  style={{ width: '100%', padding: '10px' }}
                   required
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="form-group">
+                <label className="form-label">Password</label>
                 <input
                   type="password"
-                  placeholder="Password"
+                  className="form-input"
+                  placeholder="Create a strong password"
                   value={registerData.password}
                   onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                  style={{ width: '100%', padding: '10px' }}
                   required
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
                 <input
                   type="password"
-                  placeholder="Confirm Password"
+                  className="form-input"
+                  placeholder="Re-enter your password"
                   value={registerData.confirmPassword}
                   onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                  style={{ width: '100%', padding: '10px' }}
                   required
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px' }}>Account Type:</label>
+              <div className="form-group">
+                <label className="form-label">Account Type</label>
                 <select
+                  className="form-select"
                   value={registerData.user_type}
                   onChange={(e) => setRegisterData({ ...registerData, user_type: e.target.value as 'researcher' | 'annotator' })}
-                  style={{ width: '100%', padding: '10px' }}
                 >
                   <option value="researcher">Researcher (Customer)</option>
                   <option value="annotator">Annotator</option>
                 </select>
               </div>
-              {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
+              {error && <div className="error-message">⚠️ {error}</div>}
               <button
                 type="submit"
                 disabled={loading}
-                style={{ width: '100%', padding: '10px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                className="btn btn-success"
               >
-                {loading ? 'Registering...' : 'Register'}
+                {loading ? 'Creating Account...' : 'Create Account'}
               </button>
+              <div className="auth-switch">
+                Already have an account?{' '}
+                <a className="auth-link" onClick={() => { setView('login'); setError(''); }}>
+                  Sign in
+                </a>
+              </div>
             </form>
-            <p style={{ marginTop: '15px', textAlign: 'center' }}>
-              Already have an account?{' '}
-              <a href="#" onClick={() => setView('login')}>Login</a>
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
@@ -386,47 +389,59 @@ function App() {
 
   try {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', minHeight: '100vh', background: '#f5f5f5' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h1 style={{ margin: 0 }}>Viberate Platform</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '14px', color: '#666' }}>
-            {user?.username} ({user?.user_type})
-          </span>
-          <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Logout
-          </button>
-        </div>
-      </div>
+      <div className="dashboard-container">
+        <header className="dashboard-header">
+          <div className="header-content">
+            <div className="header-brand">
+              <div className="brand-icon">🎯</div>
+              <div className="brand-text">
+                <h1>Viberate</h1>
+              </div>
+            </div>
+            <div className="user-menu">
+              <div className="user-info">
+                <p className="user-name">{user?.username}</p>
+                <p className="user-type">{user?.user_type}</p>
+              </div>
+              <button onClick={handleLogout} className="btn btn-danger btn-sm">
+                Logout
+              </button>
+            </div>
+          </div>
+        </header>
 
-      {error && (
-        <div style={{ padding: '15px', background: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '20px' }}>
-          {error}
-        </div>
-      )}
+        <main className="main-content">
+          {error && (
+            <div className="alert alert-error">
+              ⚠️ {error}
+            </div>
+          )}
 
       {user?.user_type === 'researcher' ? (
-        <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div className="card">
+          <div className="card-header">
             <div>
-              <h2 style={{ margin: 0 }}>Label Studio Integration</h2>
-              <div style={{ marginTop: '10px', padding: '10px 15px', background: '#f0f9ff', borderRadius: '6px', display: 'inline-block' }}>
-                <span style={{ color: '#0052FF', fontWeight: '600', fontSize: '18px' }}>
-                  💰 ${user.usdc_balance || '0.00'} USDC
-                </span>
-                <span style={{ color: '#666', fontSize: '12px', marginLeft: '8px' }}>on Base</span>
+              <h2 className="card-title">Label Studio Integration</h2>
+              <div className="balance-container">
+                <div className="balance-card">
+                  <div className="balance-icon">💰</div>
+                  <div className="balance-info">
+                    <p className="balance-amount">${user.usdc_balance || '0.00'}</p>
+                    <p className="balance-label">USDC on Base</p>
+                  </div>
+                </div>
               </div>
             </div>
             {user.base_wallet_address && (
               <CoinbaseOnramp
                 walletAddress={user.base_wallet_address}
                 onSuccess={() => {
-                  // Refresh user data to get updated balance
                   authAPI.getProfile().then(setUser);
                 }}
               />
             )}
           </div>
+          <div className="card-body">
 
           {(() => {
             const hasValidConnection = connection &&
@@ -436,92 +451,108 @@ function App() {
             console.log('Render check - Connection state:', { connection, hasValidConnection });
             return !hasValidConnection;
           })() ? (
-            <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px', border: '2px dashed #ddd' }}>
-              <h3 style={{ marginTop: 0, color: '#333' }}>Connect to Label Studio</h3>
-              <p style={{ color: '#666', marginBottom: '20px' }}>Login with your Label Studio account credentials</p>
+            <div className="connection-form">
+              <h3>Connect to Label Studio</h3>
+              <p>Login with your Label Studio account credentials to get started</p>
               <form onSubmit={handleCreateConnection}>
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', color: '#333', fontWeight: '500' }}>Email</label>
+                <div className="form-group">
+                  <label className="form-label">Email Address</label>
                   <input
                     type="email"
+                    className="form-input"
                     placeholder="your@email.com"
                     value={connectionForm.email}
                     onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
-                    style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
                     required
                   />
                 </div>
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px', color: '#333', fontWeight: '500' }}>Password</label>
+                <div className="form-group">
+                  <label className="form-label">Password</label>
                   <input
                     type="password"
+                    className="form-input"
                     placeholder="Your Label Studio password"
                     value={connectionForm.password}
                     onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
-                    style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
                     required
                   />
-                  <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                    We'll securely login and save your API token. Your password is not stored.
+                  <small style={{ color: '#6B7280', display: 'block', marginTop: '6px', fontSize: '13px' }}>
+                    🔒 We'll securely login and save your API token. Your password is not stored.
                   </small>
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ padding: '12px 24px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '16px', fontWeight: '500' }}
+                  className="btn btn-primary"
                 >
-                  {loading ? 'Connecting...' : 'Connect'}
+                  {loading ? 'Connecting...' : 'Connect to Label Studio'}
                 </button>
               </form>
             </div>
           ) : (
             <div>
-              <div style={{ padding: '15px', background: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="alert alert-success" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>✓ Connected to Label Studio: {connection.labelstudio_url}</span>
                 <button
                   onClick={() => {
                     setConnection(null);
                     setError('');
                   }}
-                  style={{ padding: '6px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                  className="btn btn-danger btn-sm"
                 >
                   Disconnect
                 </button>
               </div>
 
-              <div style={{ marginBottom: '30px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                  <h3>Your Projects</h3>
+              <div className="projects-section">
+                <div className="section-header">
+                  <h3 className="section-title">Your Projects</h3>
                   <button
                     onClick={loadAvailableProjects}
-                    style={{ padding: '8px 16px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    className="btn btn-success"
                   >
-                    Import New Project
+                    + Import New Project
                   </button>
                 </div>
 
                 {!projects || projects.length === 0 ? (
-                  <p>No projects imported yet. Click "Import New Project" to get started.</p>
+                  <div className="empty-state">
+                    <div className="empty-icon">📁</div>
+                    <h3 className="empty-title">No Projects Yet</h3>
+                    <p className="empty-description">Click "Import New Project" to get started with Label Studio</p>
+                  </div>
                 ) : (
-                  <div>
+                  <div className="projects-grid">
                     {projects.map((project) => (
-                      <div key={project.id} style={{ padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '15px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                      <div key={project.id} className="project-card">
+                        <div className="project-header">
                           <div>
-                            <h4 style={{ margin: '0 0 10px 0' }}>{project.title}</h4>
-                            <p style={{ margin: '0 0 10px 0', color: '#666' }}>{project.description}</p>
-                            <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-                              <span>Tasks: {project.total_tasks}</span>
-                              <span>Completed: {project.completed_tasks}</span>
-                              <span>Progress: {project.completion_percentage}%</span>
-                            </div>
+                            <h4 className="project-title">{project.title}</h4>
+                            <p className="project-description">{project.description}</p>
                           </div>
                           <button
                             onClick={() => handleSyncProject(project.id)}
-                            style={{ padding: '6px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            className="btn btn-secondary btn-sm"
                           >
-                            Sync Tasks
+                            🔄 Sync
                           </button>
+                        </div>
+                        <div className="project-stats">
+                          <div className="stat-item">
+                            <span className="stat-label">Total Tasks</span>
+                            <span className="stat-value">{project.total_tasks}</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Completed</span>
+                            <span className="stat-value">{project.completed_tasks}</span>
+                          </div>
+                          <div className="stat-item">
+                            <span className="stat-label">Progress</span>
+                            <span className="stat-value">{project.completion_percentage}%</span>
+                          </div>
+                        </div>
+                        <div className="progress-bar">
+                          <div className="progress-fill" style={{ width: `${project.completion_percentage}%` }}></div>
                         </div>
                       </div>
                     ))}
@@ -530,55 +561,66 @@ function App() {
               </div>
 
               {availableProjects && availableProjects.length > 0 && (
-                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
+                <div className="connection-form" style={{ marginTop: '32px' }}>
                   <h3>Available Projects to Import</h3>
-                  {availableProjects.map((project) => (
-                    <div key={project.id} style={{ padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '15px', background: 'white' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <h4 style={{ margin: '0 0 5px 0' }}>{project.title}</h4>
-                          <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                            {project.task_number} tasks
-                          </p>
+                  <p>Select projects from your Label Studio account to import</p>
+                  <div className="projects-grid" style={{ marginTop: '20px' }}>
+                    {availableProjects.map((project) => (
+                      <div key={project.id} className="project-card">
+                        <div className="project-header">
+                          <div>
+                            <h4 className="project-title">{project.title}</h4>
+                            <p className="project-description">{project.task_number} tasks available</p>
+                          </div>
+                          <button
+                            onClick={() => handleImportProject(project.id)}
+                            disabled={loading}
+                            className="btn btn-primary btn-sm"
+                          >
+                            Import
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleImportProject(project.id)}
-                          disabled={loading}
-                          style={{ padding: '6px 12px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                          Import
-                        </button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
           )}
+          </div>
         </div>
       ) : (
-        <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-          <h2 style={{ marginTop: 0 }}>Annotator Dashboard</h2>
-          <p style={{ color: '#666', fontSize: '16px' }}>Annotator features coming in the next sprint...</p>
-          <p style={{ color: '#999', fontSize: '14px', marginTop: '20px' }}>
-            You'll be able to view and complete annotation tasks assigned to you.
-          </p>
+        <div className="card">
+          <div className="card-body annotator-container">
+            <div className="coming-soon-icon">🎨</div>
+            <h2 className="coming-soon-title">Annotator Dashboard</h2>
+            <p className="coming-soon-text">Exciting features coming soon!</p>
+            <p style={{ color: '#9CA3AF', fontSize: '16px', margin: 0 }}>
+              You'll be able to view and complete annotation tasks assigned to you.
+            </p>
+          </div>
         </div>
       )}
-    </div>
+        </main>
+      </div>
     );
   } catch (error) {
     console.error('Dashboard rendering error:', error);
     return (
-      <div style={{ maxWidth: '600px', margin: '50px auto', padding: '30px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ color: '#dc3545' }}>Something went wrong</h2>
-        <p>Please try refreshing the page or logging out and back in.</p>
-        <button onClick={() => {
-          localStorage.removeItem('authToken');
-          window.location.reload();
-        }} style={{ marginTop: '20px', padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Logout and Reload
-        </button>
+      <div className="auth-container">
+        <div className="auth-card" style={{ textAlign: 'center' }}>
+          <div className="empty-icon" style={{ fontSize: '80px' }}>⚠️</div>
+          <h2 style={{ color: '#EF4444', marginBottom: '16px' }}>Something Went Wrong</h2>
+          <p style={{ color: '#6B7280', marginBottom: '32px' }}>
+            Please try refreshing the page or logging out and back in.
+          </p>
+          <button onClick={() => {
+            localStorage.removeItem('authToken');
+            window.location.reload();
+          }} className="btn btn-primary">
+            Logout and Reload
+          </button>
+        </div>
       </div>
     );
   }
