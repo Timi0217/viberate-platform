@@ -37,7 +37,8 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
     });
 
     setOnrampInstance(instance);
-  }, [walletAddress, onSuccess]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress]);
 
   const handleFundAccount = () => {
     if (onrampInstance) {

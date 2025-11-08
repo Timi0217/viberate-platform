@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   authAPI,
   labelStudioAPI,
@@ -239,7 +239,7 @@ function App() {
     }
   };
 
-  const refreshBalance = async () => {
+  const refreshBalance = useCallback(async () => {
     if (!user) return;
     try {
       const balanceData = await walletAPI.getBalance();
@@ -247,7 +247,7 @@ function App() {
     } catch (err) {
       console.error('Failed to refresh balance:', err);
     }
-  };
+  }, [user]);
 
   // Loading state
   if (pageLoading) {
@@ -443,9 +443,7 @@ function App() {
                 </button>
                 <CoinbaseOnramp
                   walletAddress={user.base_wallet_address}
-                  onSuccess={() => {
-                    refreshBalance();
-                  }}
+                  onSuccess={refreshBalance}
                 />
               </div>
             )}
