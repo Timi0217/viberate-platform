@@ -31,7 +31,8 @@ function App() {
   const [connection, setConnection] = useState<LabelStudioConnection | null>(null);
   const [connectionForm, setConnectionForm] = useState({
     labelstudio_url: 'https://app.heartex.com',
-    api_token: '',
+    email: '',
+    password: '',
   });
   const [projects, setProjects] = useState<LabelStudioProject[]>([]);
   const [availableProjects, setAvailableProjects] = useState<any[]>([]);
@@ -173,7 +174,7 @@ function App() {
       setConnection(newConnection);
       loadProjects();
     } catch (err: any) {
-      setError(err.response?.data?.api_token?.[0] || err.response?.data?.error || 'Failed to connect');
+      setError(err.response?.data?.email?.[0] || err.response?.data?.error || 'Failed to connect');
     } finally {
       setLoading(false);
     }
@@ -430,17 +431,28 @@ function App() {
                   />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>API Token:</label>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
                   <input
-                    type="text"
-                    placeholder="Your Label Studio API Token"
-                    value={connectionForm.api_token}
-                    onChange={(e) => setConnectionForm({ ...connectionForm, api_token: e.target.value })}
+                    type="email"
+                    placeholder="your@email.com"
+                    value={connectionForm.email}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
+                    style={{ width: '100%', padding: '10px' }}
+                    required
+                  />
+                </div>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
+                  <input
+                    type="password"
+                    placeholder="Your Label Studio password"
+                    value={connectionForm.password}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
                     style={{ width: '100%', padding: '10px' }}
                     required
                   />
                   <small style={{ color: '#666' }}>
-                    Get your API token from Label Studio: Account & Settings → Access Token
+                    We'll securely login and save your API token. Your password is not stored.
                   </small>
                 </div>
                 <button

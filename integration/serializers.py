@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import LabelStudioProject, LabelStudioConnection
-from .labelstudio_client import LabelStudioClient
+from .labelstudio_client import LabelStudioClient, login_and_get_token
 
 
 class LabelStudioProjectSerializer(serializers.ModelSerializer):
@@ -37,10 +37,10 @@ class LabelStudioConnectionSerializer(serializers.ModelSerializer):
     2. Token-based: Provide api_token directly (for advanced users)
     """
     # Optional fields for credential-based authentication
-    username = serializers.CharField(
+    email = serializers.EmailField(
         write_only=True,
         required=False,
-        help_text="Label Studio username (for credential-based auth)"
+        help_text="Label Studio email (for credential-based auth)"
     )
     password = serializers.CharField(
         write_only=True,
@@ -52,7 +52,7 @@ class LabelStudioConnectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = LabelStudioConnection
         fields = [
-            'id', 'labelstudio_url', 'api_token', 'username', 'password',
+            'id', 'labelstudio_url', 'api_token', 'email', 'password',
             'is_verified', 'last_verified_at', 'created_at'
         ]
         read_only_fields = ['id', 'is_verified', 'last_verified_at', 'created_at']
@@ -68,42 +68,33 @@ class LabelStudioConnectionSerializer(serializers.ModelSerializer):
         """
         Verify the connection works.
 
-        If username/password provided: Authenticate and fetch token
+        If email/password provided: Authenticate and fetch token
         If api_token provided: Verify token works
         """
         url = attrs.get('labelstudio_url')
-        username = attrs.pop('username', None)
+        email = attrs.pop('email', None)
         password = attrs.pop('password', None)
         token = attrs.get('api_token')
 
         # Check that we have either credentials OR token
-        if not token and not (username and password):
+        if not token and not (email and password):
             raise serializers.ValidationError(
-                "Please provide either 'api_token' OR both 'username' and 'password'"
+                "Please provide either 'api_token' OR both 'email' and 'password'"
             )
 
-        # Method 1: Credential-based authentication
-        if username and password:
+        # Method 1: Credential-based authentication (email + password)
+        if email and password:
             try:
-                client = LabelStudioClient(api_url=url)
-                user_info = client.authenticate_user(username, password)
-
-                if not user_info or 'token' not in user_info:
-                    raise serializers.ValidationError({
-                        'username': 'Authentication failed. Please check your credentials.'
-                    })
+                # Login and get the token
+                api_token = login_and_get_token(url, email, password)
 
                 # Store the fetched token
-                attrs['api_token'] = user_info['token']
+                attrs['api_token'] = api_token
                 attrs['is_verified'] = True
-
-                # Optionally store Label Studio user ID in the User model
-                if 'id' in user_info:
-                    self.context['labelstudio_user_id'] = user_info['id']
 
             except Exception as e:
                 raise serializers.ValidationError({
-                    'username': f'Label Studio authentication failed: {str(e)}'
+                    'email': f'Label Studio authentication failed: {str(e)}'
                 })
 
         # Method 2: Token-based authentication

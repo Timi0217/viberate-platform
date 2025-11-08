@@ -3,6 +3,8 @@ Label Studio API client for syncing projects and tasks.
 """
 from label_studio_sdk import Client
 from django.conf import settings
+import requests
+from bs4 import BeautifulSoup
 
 
 class LabelStudioClient:
@@ -131,3 +133,72 @@ def create_client_for_user(user):
             "User does not have a Label Studio connection configured. "
             f"Error: {str(e)}"
         )
+
+
+def login_and_get_token(labelstudio_url, email, password):
+    """
+    Login to Label Studio with email/password and retrieve API token.
+    Returns the API token if successful.
+    """
+    try:
+        session = requests.Session()
+
+        # Step 1: Get the login page to retrieve CSRF token
+        login_page_url = f"{labelstudio_url}/user/login/"
+        response = session.get(login_page_url)
+        response.raise_for_status()
+
+        # Parse CSRF token from the page
+        soup = BeautifulSoup(response.text, 'html.parser')
+        csrf_token = None
+        csrf_input = soup.find('input', {'name': 'csrfmiddlewaretoken'})
+        if csrf_input:
+            csrf_token = csrf_input.get('value')
+
+        if not csrf_token:
+            # Try to get from cookies
+            csrf_token = session.cookies.get('csrftoken')
+
+        if not csrf_token:
+            raise Exception("Could not retrieve CSRF token from Label Studio")
+
+        # Step 2: Login with credentials
+        login_data = {
+            'csrfmiddlewaretoken': csrf_token,
+            'email': email,
+            'password': password,
+        }
+
+        headers = {
+            'Referer': login_page_url,
+            'X-CSRFToken': csrf_token,
+        }
+
+        login_response = session.post(
+            login_page_url,
+            data=login_data,
+            headers=headers,
+            allow_redirects=True
+        )
+
+        # Check if login was successful
+        if login_response.status_code != 200 or 'error' in login_response.text.lower():
+            raise Exception("Invalid email or password")
+
+        # Step 3: Get the API token from the user account page
+        token_url = f"{labelstudio_url}/api/current-user/token"
+        token_response = session.get(token_url)
+        token_response.raise_for_status()
+
+        token_data = token_response.json()
+        api_token = token_data.get('token')
+
+        if not api_token:
+            raise Exception("Could not retrieve API token after login")
+
+        return api_token
+
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Network error connecting to Label Studio: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Failed to login to Label Studio: {str(e)}")
