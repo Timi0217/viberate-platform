@@ -240,14 +240,16 @@ function App() {
   };
 
   const refreshBalance = useCallback(async () => {
-    if (!user) return;
     try {
       const balanceData = await walletAPI.getBalance();
-      setUser({ ...user, usdc_balance: balanceData.balance });
+      setUser((prevUser) => {
+        if (!prevUser) return prevUser;
+        return { ...prevUser, usdc_balance: balanceData.balance };
+      });
     } catch (err) {
       console.error('Failed to refresh balance:', err);
     }
-  }, [user]);
+  }, []);
 
   // Loading state
   if (pageLoading) {
