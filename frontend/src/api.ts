@@ -27,6 +27,8 @@ export interface User {
   user_type: 'researcher' | 'annotator';
   rating?: number;
   tasks_completed?: number;
+  base_wallet_address?: string;
+  usdc_balance?: string;
 }
 
 export interface LabelStudioConnection {

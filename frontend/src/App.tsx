@@ -8,6 +8,7 @@ import {
   type LabelStudioProject,
   type Task
 } from './api';
+import { CoinbaseOnramp } from './CoinbaseOnramp';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -406,7 +407,26 @@ function App() {
 
       {user?.user_type === 'researcher' ? (
         <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ marginTop: 0 }}>Label Studio Integration</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div>
+              <h2 style={{ margin: 0 }}>Label Studio Integration</h2>
+              <div style={{ marginTop: '10px', padding: '10px 15px', background: '#f0f9ff', borderRadius: '6px', display: 'inline-block' }}>
+                <span style={{ color: '#0052FF', fontWeight: '600', fontSize: '18px' }}>
+                  💰 ${user.usdc_balance || '0.00'} USDC
+                </span>
+                <span style={{ color: '#666', fontSize: '12px', marginLeft: '8px' }}>on Base</span>
+              </div>
+            </div>
+            {user.base_wallet_address && (
+              <CoinbaseOnramp
+                walletAddress={user.base_wallet_address}
+                onSuccess={() => {
+                  // Refresh user data to get updated balance
+                  authAPI.getProfile().then(setUser);
+                }}
+              />
+            )}
+          </div>
 
           {(() => {
             const hasValidConnection = connection &&

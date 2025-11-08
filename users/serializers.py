@@ -10,9 +10,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'user_type', 'bio', 'avatar_url', 'skills', 'rating',
-            'tasks_completed', 'created_at'
+            'tasks_completed', 'base_wallet_address', 'usdc_balance', 'created_at'
         ]
-        read_only_fields = ['id', 'rating', 'tasks_completed', 'created_at']
+        read_only_fields = ['id', 'rating', 'tasks_completed', 'usdc_balance', 'created_at']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

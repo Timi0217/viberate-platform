@@ -46,6 +46,19 @@ class User(AbstractUser):
         help_text="Total number of tasks completed"
     )
 
+    # Crypto wallet fields (Base network)
+    base_wallet_address = models.CharField(
+        max_length=42,
+        blank=True,
+        help_text="Base network wallet address (0x...)"
+    )
+    usdc_balance = models.DecimalField(
+        max_digits=18,
+        decimal_places=6,
+        default=0,
+        help_text="USDC balance on Base network"
+    )
+
     # Profile fields
     bio = models.TextField(blank=True)
     avatar_url = models.URLField(blank=True)
