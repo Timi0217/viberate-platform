@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from users.auth_views import login_view, register_view, logout_view, profile_view
+from users.auth_views import login_view, register_view, logout_view, profile_view, delete_all_users_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,6 +27,7 @@ urlpatterns = [
     path("api/auth/register/", register_view, name='register'),
     path("api/auth/logout/", logout_view, name='logout'),
     path("api/auth/profile/", profile_view, name='profile'),
+    path("api/auth/delete-all-users/", delete_all_users_view, name='delete-all-users'),
 
     # API endpoints
     path("api/", include('users.urls')),

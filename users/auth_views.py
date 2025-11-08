@@ -95,3 +95,23 @@ def logout_view(request):
 def profile_view(request):
     """Get current user's profile."""
     return Response(UserSerializer(request.user).data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def delete_all_users_view(request):
+    """Delete all users (for testing only)."""
+    # Simple secret key check
+    secret = request.data.get('secret')
+    if secret != 'delete_all_users_2024':
+        return Response(
+            {'error': 'Invalid secret'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    count = User.objects.all().count()
+    User.objects.all().delete()
+
+    return Response({
+        'message': f'Successfully deleted {count} users'
+    })
