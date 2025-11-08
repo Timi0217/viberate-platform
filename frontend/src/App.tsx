@@ -138,16 +138,28 @@ function App() {
       const data = await labelStudioAPI.getConnection();
       console.log('Connection data received:', data);
 
-      if (Array.isArray(data) && data.length > 0) {
-        setConnection(data[0]);
-      } else if (data && !Array.isArray(data) && data.id) {
+      // Check if data is an array with connections
+      if (Array.isArray(data)) {
+        if (data.length > 0 && data[0].id && data[0].labelstudio_url) {
+          console.log('Valid connection found in array:', data[0]);
+          setConnection(data[0]);
+        } else {
+          console.log('Empty array or invalid connection, setting to null');
+          setConnection(null);
+        }
+      }
+      // Check if data is a single connection object
+      else if (data && typeof data === 'object' && data.id && data.labelstudio_url) {
+        console.log('Valid connection object found:', data);
         setConnection(data);
-      } else {
-        console.log('No valid connection found');
+      }
+      // No valid connection
+      else {
+        console.log('No valid connection found, setting to null');
         setConnection(null);
       }
     } catch (err) {
-      console.log('No connection yet:', err);
+      console.log('Error loading connection:', err);
       setConnection(null);
     }
   };
@@ -394,10 +406,15 @@ function App() {
       {user?.user_type === 'researcher' ? (
         <div style={{ background: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h2 style={{ marginTop: 0 }}>Label Studio Integration</h2>
-          {console.log('Connection state:', connection)}
-          {console.log('Should show form?', !connection || !connection.labelstudio_url || !connection.id)}
 
-          {!connection || !connection.labelstudio_url || !connection.id ? (
+          {(() => {
+            const hasValidConnection = connection &&
+                                      connection.id &&
+                                      connection.labelstudio_url &&
+                                      connection.labelstudio_url.trim() !== '';
+            console.log('Render check - Connection state:', { connection, hasValidConnection });
+            return !hasValidConnection;
+          })() ? (
             <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px', border: '2px dashed #ddd' }}>
               <h3 style={{ marginTop: 0 }}>Connect to Label Studio</h3>
               <form onSubmit={handleCreateConnection}>
