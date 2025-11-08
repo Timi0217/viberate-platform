@@ -156,4 +156,25 @@ export const tasksAPI = {
   },
 };
 
+// Wallet API
+export const walletAPI = {
+  getBalance: async () => {
+    const response = await api.get('/api/wallet/balance/');
+    return response.data;
+  },
+
+  transfer: async (toAddress: string, amount: string) => {
+    const response = await api.post('/api/wallet/transfer/', {
+      to_address: toAddress,
+      amount: amount
+    });
+    return response.data;
+  },
+
+  getTransactions: async () => {
+    const response = await api.get('/api/wallet/transactions/');
+    return response.data;
+  },
+};
+
 export default api;

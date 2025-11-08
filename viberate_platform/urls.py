@@ -32,4 +32,5 @@ urlpatterns = [
     path("api/", include('users.urls')),
     path("api/labelstudio/", include('integration.urls')),
     path("api/", include('tasks.urls')),
+    path("api/wallet/", include('wallet.urls')),
 ]

@@ -52,6 +52,15 @@ class User(AbstractUser):
         blank=True,
         help_text="Base network wallet address (0x...)"
     )
+    wallet_data = models.TextField(
+        blank=True,
+        help_text="Encrypted wallet data from Coinbase CDP"
+    )
+    wallet_id = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Coinbase CDP wallet ID"
+    )
     usdc_balance = models.DecimalField(
         max_digits=18,
         decimal_places=6,

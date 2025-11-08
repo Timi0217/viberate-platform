@@ -3,6 +3,7 @@ import {
   authAPI,
   labelStudioAPI,
   tasksAPI,
+  walletAPI,
   type User,
   type LabelStudioConnection,
   type LabelStudioProject,
@@ -238,6 +239,16 @@ function App() {
     }
   };
 
+  const refreshBalance = async () => {
+    if (!user) return;
+    try {
+      const balanceData = await walletAPI.getBalance();
+      setUser({ ...user, usdc_balance: balanceData.balance });
+    } catch (err) {
+      console.error('Failed to refresh balance:', err);
+    }
+  };
+
   // Loading state
   if (pageLoading) {
     return (
@@ -433,12 +444,21 @@ function App() {
               </div>
             </div>
             {user.base_wallet_address && (
-              <CoinbaseOnramp
-                walletAddress={user.base_wallet_address}
-                onSuccess={() => {
-                  authAPI.getProfile().then(setUser);
-                }}
-              />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={refreshBalance}
+                  className="btn btn-outline btn-sm"
+                  title="Refresh balance"
+                >
+                  🔄 Refresh
+                </button>
+                <CoinbaseOnramp
+                  walletAddress={user.base_wallet_address}
+                  onSuccess={() => {
+                    refreshBalance();
+                  }}
+                />
+              </div>
             )}
           </div>
           <div className="card-body">

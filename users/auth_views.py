@@ -6,6 +6,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .models import User
 from .serializers import UserSerializer, UserCreateSerializer
+from wallet.wallet_service import WalletService
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
@@ -46,6 +50,20 @@ def register_view(request):
 
     if serializer.is_valid():
         user = serializer.save()
+
+        # Create wallet automatically for researchers
+        if user.user_type == 'researcher':
+            try:
+                wallet_info = WalletService.create_wallet(network='base-mainnet')
+                user.base_wallet_address = wallet_info['address']
+                user.wallet_data = wallet_info['wallet_data']
+                user.wallet_id = wallet_info['wallet_id']
+                user.save()
+                logger.info(f"Created wallet for researcher {user.username}: {wallet_info['address']}")
+            except Exception as e:
+                logger.error(f"Failed to create wallet for {user.username}: {e}")
+                # Continue registration even if wallet creation fails
+
         # Create token for new user
         token, _ = Token.objects.get_or_create(user=user)
 
