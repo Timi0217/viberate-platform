@@ -417,48 +417,38 @@ function App() {
             return !hasValidConnection;
           })() ? (
             <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '30px', border: '2px dashed #ddd' }}>
-              <h3 style={{ marginTop: 0 }}>Connect to Label Studio</h3>
+              <h3 style={{ marginTop: 0, color: '#333' }}>Connect to Label Studio</h3>
+              <p style={{ color: '#666', marginBottom: '20px' }}>Login with your Label Studio account credentials</p>
               <form onSubmit={handleCreateConnection}>
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>Label Studio URL:</label>
-                  <input
-                    type="url"
-                    placeholder="https://app.heartex.com"
-                    value={connectionForm.labelstudio_url}
-                    onChange={(e) => setConnectionForm({ ...connectionForm, labelstudio_url: e.target.value })}
-                    style={{ width: '100%', padding: '10px' }}
-                    required
-                  />
-                </div>
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#333', fontWeight: '500' }}>Email</label>
                   <input
                     type="email"
                     placeholder="your@email.com"
                     value={connectionForm.email}
                     onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
-                    style={{ width: '100%', padding: '10px' }}
+                    style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
                     required
                   />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
-                  <label style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#333', fontWeight: '500' }}>Password</label>
                   <input
                     type="password"
                     placeholder="Your Label Studio password"
                     value={connectionForm.password}
                     onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
-                    style={{ width: '100%', padding: '10px' }}
+                    style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
                     required
                   />
-                  <small style={{ color: '#666' }}>
+                  <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
                     We'll securely login and save your API token. Your password is not stored.
                   </small>
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  style={{ padding: '12px 24px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '16px', fontWeight: '500' }}
                 >
                   {loading ? 'Connecting...' : 'Connect'}
                 </button>
