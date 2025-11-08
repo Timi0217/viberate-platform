@@ -10,10 +10,10 @@ A complete web application that integrates with Label Studio Cloud to distribute
 ## 🌐 Live Deployments
 
 ### Frontend (React + TypeScript)
-- **URL**: https://frontend-5zhimjf0k-timidayokayode-gmailcoms-projects.vercel.app
+- **URL**: https://frontend-58aqpnlae-timidayokayode-gmailcoms-projects.vercel.app
 - **Platform**: Vercel
 - **Status**: ✅ Live and Updated
-- **Latest Deployment**: Just deployed with all bug fixes
+- **Latest Deployment**: Connection state validation fix deployed
 
 ### Backend (Django REST API)
 - **URL**: https://django-production-3340.up.railway.app
@@ -264,7 +264,7 @@ Results:
 ### As a Researcher (Customer):
 
 1. **Register**
-   - Go to: https://frontend-5zhimjf0k-timidayokayode-gmailcoms-projects.vercel.app
+   - Go to: https://frontend-58aqpnlae-timidayokayode-gmailcoms-projects.vercel.app
    - Click "Register"
    - Select "Researcher (Customer)" as account type
    - Create your account
@@ -431,7 +431,7 @@ In this session, we:
 
 ## 🔗 Quick Links
 
-- **Live Frontend**: https://frontend-5zhimjf0k-timidayokayode-gmailcoms-projects.vercel.app
+- **Live Frontend**: https://frontend-58aqpnlae-timidayokayode-gmailcoms-projects.vercel.app
 - **Backend API**: https://django-production-3340.up.railway.app
 - **GitHub Repo**: https://github.com/Timi0217/viberate-platform
 - **Railway Dashboard**: https://railway.app/project/d74844ab-fb94-4a44-a8db-8c5f81108f5f
