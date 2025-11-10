@@ -53,6 +53,7 @@ function App() {
       loadConnection().catch(err => console.log('No connection yet:', err));
       loadProjects().catch(err => console.log('No projects yet:', err));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user]);
 
   const checkAuth = async () => {
