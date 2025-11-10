@@ -2,11 +2,13 @@
 API views for wallet operations
 """
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from django.views.decorators.csrf import csrf_exempt
 from .wallet_service import WalletService
+from .authentication import CsrfExemptSessionAuthentication
 from decimal import Decimal
 import logging
 import os
@@ -154,6 +156,7 @@ def transaction_history(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication, CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def generate_onramp_session_token(request):
     """
