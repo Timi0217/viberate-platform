@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { initOnRamp, CBPayInstanceType } from '@coinbase/cbpay-js';
-import axios from 'axios';
+import api from './api';
 
 interface CoinbaseOnrampProps {
   walletAddress: string;
   onSuccess?: () => void;
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps) {
   const [onrampInstance, setOnrampInstance] = useState<CBPayInstanceType | null>(null);
@@ -23,18 +21,8 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
         setIsLoading(true);
         setError(null);
 
-        // Fetch session token from backend
-        const token = localStorage.getItem('token');
-        const response = await axios.post(
-          `${API_BASE_URL}/api/wallet/onramp-session-token/`,
-          {},
-          {
-            headers: {
-              'Authorization': `Token ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        // Fetch session token from backend using centralized API instance
+        const response = await api.post('/api/wallet/onramp-session-token/', {});
 
         const sessionToken = response.data.sessionToken;
         console.log('✅ Session token received');
