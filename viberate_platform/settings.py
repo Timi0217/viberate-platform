@@ -172,8 +172,8 @@ AUTH_USER_MODEL = 'users.User'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'wallet.authentication.CsrfExemptSessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -181,6 +181,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
+
+# Disable CSRF for API endpoints (they use Token authentication)
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
@@ -195,6 +199,14 @@ if not DEBUG:
         r"^https://.*\.vercel\.app$",
         r"^https://.*\.railway\.app$",
     ]
+
+# CSRF Trusted Origins for cross-origin POST requests
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://*.railway.app',
+    'http://localhost:3000',
+    'http://localhost:8000',
+]
 
 # Label Studio settings
 LABEL_STUDIO_URL = os.getenv("LABEL_STUDIO_URL", "http://localhost:8080")

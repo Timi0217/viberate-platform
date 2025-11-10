@@ -5,9 +5,15 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.views.decorators.csrf import csrf_exempt
 from .wallet_service import WalletService
 from decimal import Decimal
 import logging
+import os
+import requests
+import time
+import jwt as pyjwt
+import secrets
 
 logger = logging.getLogger(__name__)
 
@@ -142,5 +148,129 @@ def transaction_history(request):
         logger.error(f"Failed to get transaction history for {user.username}: {e}")
         return Response(
             {'error': 'Failed to retrieve transaction history'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_onramp_session_token(request):
+    """
+    Generate a Coinbase Onramp session token for secure initialization
+    This endpoint creates a JWT and calls Coinbase API to get a session token
+    """
+    user = request.user
+
+    if not user.base_wallet_address:
+        return Response(
+            {'error': 'No wallet address found for this user'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        # Get CDP API credentials
+        api_key_name = os.getenv('COINBASE_CDP_API_KEY_NAME')
+        api_key_private_key = os.getenv('COINBASE_CDP_API_KEY_PRIVATE')
+
+        if not api_key_name or not api_key_private_key:
+            logger.error("Coinbase CDP API credentials not configured")
+            return Response(
+                {'error': 'Onramp service not configured'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # Generate JWT for Coinbase API authentication
+        request_method = "POST"
+        request_host = "api.developer.coinbase.com"
+        request_path = "/onramp/v1/token"
+
+        # Create JWT payload
+        payload = {
+            'sub': api_key_name,
+            'iss': 'cdp',
+            'nbf': int(time.time()),
+            'exp': int(time.time()) + 120,  # 2 minutes
+            'uri': f"{request_method} {request_host}{request_path}",
+        }
+
+        # Convert base64 private key to PEM format for PyJWT
+        import base64
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.hazmat.backends import default_backend
+
+        # Decode the base64 private key
+        private_key_bytes = base64.b64decode(api_key_private_key)
+
+        # Load as EC private key (assuming secp256r1/prime256v1 curve used by Coinbase)
+        private_key_obj = ec.derive_private_key(
+            int.from_bytes(private_key_bytes[:32], 'big'),
+            ec.SECP256R1(),
+            default_backend()
+        )
+
+        # Convert to PEM format
+        pem_key = private_key_obj.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+
+        # Create JWT using ES256 algorithm
+        token = pyjwt.encode(
+            payload,
+            pem_key,
+            algorithm='ES256',
+            headers={'kid': api_key_name, 'nonce': secrets.token_hex(16)}
+        )
+
+        # Call Coinbase API to generate session token
+        url = f"https://{request_host}{request_path}"
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+
+        # Prepare request body
+        body = {
+            'addresses': [{
+                'address': user.base_wallet_address,
+                'blockchains': ['base']
+            }],
+            'assets': ['USDC']
+        }
+
+        # Make API request
+        response = requests.post(url, json=body, headers=headers, timeout=10)
+
+        if response.status_code != 200:
+            logger.error(f"Coinbase API error: {response.status_code} - {response.text}")
+            return Response(
+                {'error': 'Failed to generate session token', 'details': response.text},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # Parse response
+        data = response.json()
+        session_token = data.get('data', {}).get('token')
+
+        if not session_token:
+            logger.error(f"No token in response: {data}")
+            return Response(
+                {'error': 'Invalid response from Coinbase'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        logger.info(f"Generated session token for user {user.username}")
+
+        return Response({
+            'sessionToken': session_token
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to generate session token for {user.username}: {e}", exc_info=True)
+        return Response(
+            {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
