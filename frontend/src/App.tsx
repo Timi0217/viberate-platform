@@ -402,11 +402,18 @@ function App() {
               </div>
             </div>
             <div className="user-menu">
+              <div className="wallet-section">
+                {user.base_wallet_address && (
+                  <div className="balance-display">
+                    <span className="balance-value">${user.usdc_balance || '0.00'}</span>
+                    <span className="balance-currency">USDC</span>
+                  </div>
+                )}
+              </div>
               <div className="user-info">
                 <p className="user-name">{user?.username}</p>
-                <p className="user-type">{user?.user_type}</p>
               </div>
-              <button onClick={handleLogout} className="btn btn-danger btn-sm">
+              <button onClick={handleLogout} className="btn btn-outline btn-sm logout-btn">
                 Logout
               </button>
             </div>
@@ -414,9 +421,40 @@ function App() {
         </header>
 
         <main className="main-content">
+          {/* Wallet Actions Bar */}
+          {user.base_wallet_address && (
+            <div className="wallet-actions-bar">
+              <div className="wallet-info">
+                <div className="wallet-address">
+                  <span className="wallet-label">Wallet Address</span>
+                  <code className="wallet-code">{user.base_wallet_address.slice(0, 6)}...{user.base_wallet_address.slice(-4)}</code>
+                </div>
+              </div>
+              <div className="wallet-actions">
+                <button
+                  onClick={refreshBalance}
+                  className="btn btn-outline btn-sm"
+                  title="Refresh balance"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                  </svg>
+                  Refresh
+                </button>
+                <CoinbaseOnramp
+                  walletAddress={user.base_wallet_address}
+                  onSuccess={refreshBalance}
+                />
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="alert alert-error">
-              ⚠️ {error}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              {error}
             </div>
           )}
 
@@ -424,32 +462,9 @@ function App() {
         <div className="card">
           <div className="card-header">
             <div>
-              <h2 className="card-title">Label Studio Integration</h2>
-              <div className="balance-container">
-                <div className="balance-card">
-                  <div className="balance-icon">💰</div>
-                  <div className="balance-info">
-                    <p className="balance-amount">${user.usdc_balance || '0.00'}</p>
-                    <p className="balance-label">USDC on Base</p>
-                  </div>
-                </div>
-              </div>
+              <h2 className="card-title">Projects</h2>
+              <p className="card-subtitle">Manage your Label Studio annotation projects</p>
             </div>
-            {user.base_wallet_address && (
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button
-                  onClick={refreshBalance}
-                  className="btn btn-outline btn-sm"
-                  title="Refresh balance"
-                >
-                  🔄 Refresh
-                </button>
-                <CoinbaseOnramp
-                  walletAddress={user.base_wallet_address}
-                  onSuccess={refreshBalance}
-                />
-              </div>
-            )}
           </div>
           <div className="card-body">
 

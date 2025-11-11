@@ -81,31 +81,45 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
     <button
       onClick={handleFundAccount}
       disabled={isLoading || !!error}
+      className="btn-fund-account"
       style={{
-        padding: '12px 24px',
-        background: isLoading || error ? '#6B7280' : '#0052FF',
+        padding: '10px 20px',
+        background: isLoading || error ? '#9CA3AF' : 'linear-gradient(135deg, #0052FF 0%, #00D4FF 100%)',
         color: 'white',
         border: 'none',
         borderRadius: '8px',
         cursor: isLoading || error ? 'not-allowed' : 'pointer',
-        fontSize: '16px',
+        fontSize: '14px',
         fontWeight: '600',
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
         gap: '8px',
-        opacity: isLoading || error ? 0.6 : 1
+        opacity: isLoading || error ? 0.6 : 1,
+        transition: 'all 0.2s',
+        boxShadow: !isLoading && !error ? '0 4px 12px rgba(0, 82, 255, 0.25)' : 'none'
       }}
     >
       {isLoading ? (
-        <>Loading...</>
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+            <circle cx="12" cy="12" r="10" opacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
+          </svg>
+          Loading...
+        </>
       ) : error ? (
-        <>Error - Click for details</>
+        <>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          Error
+        </>
       ) : (
         <>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="white"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
-          Fund Account with Credit Card
+          Add Funds
         </>
       )}
     </button>

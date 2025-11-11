@@ -233,6 +233,11 @@ body {
   font-size: 14px;
 }
 
+.btn-fund-account:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 82, 255, 0.35) !important;
+}
+
 .auth-switch {
   text-align: center;
   margin-top: 24px;
@@ -266,23 +271,24 @@ body {
 /* Main Dashboard */
 .dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #F8FAFC;
   padding: 0;
 }
 
 /* Header */
 .dashboard-header {
   background: white;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid #E2E8F0;
 }
 
 .header-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 32px;
+  padding: 16px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -295,18 +301,18 @@ body {
 }
 
 .brand-icon {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   background: var(--primary-gradient);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .brand-text h1 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   margin: 0;
   background: var(--primary-gradient);
@@ -318,7 +324,35 @@ body {
 .user-menu {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
+}
+
+.wallet-section {
+  display: flex;
+  align-items: center;
+}
+
+.balance-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #BFDBFE;
+}
+
+.balance-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0052FF;
+}
+
+.balance-currency {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3B82F6;
+  text-transform: uppercase;
 }
 
 .user-info {
@@ -326,92 +360,110 @@ body {
 }
 
 .user-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
-.user-type {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0;
+.logout-btn {
+  border-color: #E5E7EB;
+  color: #6B7280;
+}
+
+.logout-btn:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
 }
 
 /* Main Content */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 24px 32px;
+}
+
+/* Wallet Actions Bar */
+.wallet-actions-bar {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.wallet-info {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.wallet-address {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wallet-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wallet-code {
+  font-size: 13px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  color: #1F2937;
+  background: #F3F4F6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 /* Card */
 .card {
   background: white;
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   overflow: hidden;
   animation: slideUp 0.5s ease-out;
 }
 
 .card-header {
   padding: 24px 32px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-bottom: 1px solid #E5E7EB;
+  background: #FAFBFC;
 }
 
 .card-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
   margin: 0;
+  font-weight: 400;
 }
 
 .card-body {
   padding: 32px;
-}
-
-/* Balance Display */
-.balance-container {
-  margin-top: 16px;
-  display: inline-block;
-}
-
-.balance-card {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 2px solid #0052FF22;
-  padding: 16px 24px;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.balance-icon {
-  font-size: 32px;
-}
-
-.balance-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.balance-amount {
-  font-size: 28px;
-  font-weight: 700;
-  color: #0052FF;
-  margin: 0;
-  line-height: 1;
-}
-
-.balance-label {
-  font-size: 12px;
-  color: #6B7280;
-  margin: 4px 0 0 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* Alert Box */
