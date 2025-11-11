@@ -476,55 +476,96 @@ function App() {
             console.log('Render check - Connection state:', { connection, hasValidConnection });
             return !hasValidConnection;
           })() ? (
-            <div className="connection-form">
-              <h3>Connect to Label Studio</h3>
-              <p>Login with your Label Studio account credentials to get started</p>
-              <form onSubmit={handleCreateConnection}>
-                <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    placeholder="your@email.com"
-                    value={connectionForm.email}
-                    onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
-                    required
-                  />
+            <div className="connection-empty-state">
+              <div className="connection-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <h3 className="connection-title">Connect to Label Studio</h3>
+              <p className="connection-description">
+                Link your Label Studio account to start managing annotation projects
+              </p>
+
+              <form onSubmit={handleCreateConnection} className="connection-form-compact">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Email Address</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="your@email.com"
+                      value={connectionForm.email}
+                      onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Password</label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder="Your Label Studio password"
+                      value={connectionForm.password}
+                      onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    className="form-input"
-                    placeholder="Your Label Studio password"
-                    value={connectionForm.password}
-                    onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
-                    required
-                  />
-                  <small style={{ color: '#6B7280', display: 'block', marginTop: '6px', fontSize: '13px' }}>
-                    🔒 We'll securely login and save your API token. Your password is not stored.
-                  </small>
+
+                <div className="form-security-note">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                  </svg>
+                  <span>We securely save your API token. Your password is never stored.</span>
                 </div>
+
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-connect"
                 >
-                  {loading ? 'Connecting...' : 'Connect to Label Studio'}
+                  {loading ? (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+                        <circle cx="12" cy="12" r="10" opacity="0.25"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
+                      </svg>
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                      </svg>
+                      Connect to Label Studio
+                    </>
+                  )}
                 </button>
               </form>
             </div>
           ) : (
             <div>
-              <div className="alert alert-success" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>✓ Connected to Label Studio: {connection.labelstudio_url}</span>
+              <div className="connection-success-banner">
+                <div className="connection-success-content">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <div>
+                    <span className="connection-success-label">Connected to Label Studio</span>
+                    <span className="connection-success-url">{connection.labelstudio_url}</span>
+                  </div>
+                </div>
                 <button
                   onClick={() => {
                     setConnection(null);
                     setError('');
                   }}
-                  className="btn btn-danger btn-sm"
+                  className="btn btn-outline btn-sm disconnect-btn"
                 >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                  </svg>
                   Disconnect
                 </button>
               </div>
