@@ -406,7 +406,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 }
 
 .wallet-info {
@@ -449,7 +449,7 @@ body {
 .card {
   background: white;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
   overflow: hidden;
   animation: slideUp 0.5s ease-out;
 }
@@ -625,12 +625,12 @@ body {
   border-radius: 12px;
   padding: 24px;
   transition: all 0.2s;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 }
 
 .project-card:hover {
-  border-color: rgba(0, 122, 255, 0.3);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 rgba(0, 122, 255, 0.12);
+  transform: translateY(-2px);
 }
 
 .project-header {
