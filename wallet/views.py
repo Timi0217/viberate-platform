@@ -197,28 +197,47 @@ def generate_onramp_session_token(request):
             'uri': f"{request_method} {request_host}{request_path}",
         }
 
-        # Convert base64 private key to PEM format for PyJWT
-        import base64
+        # Load private key
         from cryptography.hazmat.primitives import serialization
         from cryptography.hazmat.primitives.asymmetric import ec
         from cryptography.hazmat.backends import default_backend
+        import base64
 
-        # Decode the base64 private key
-        private_key_bytes = base64.b64decode(api_key_private_key)
+        # Check if key is already in PEM format
+        if api_key_private_key.startswith('-----BEGIN'):
+            # Already in PEM format - replace literal \n with actual newlines
+            api_key_private_key = api_key_private_key.replace('\\n', '\n')
+            private_key_bytes = api_key_private_key.encode('utf-8')
+            pem_key = serialization.load_pem_private_key(
+                private_key_bytes,
+                password=None,
+                backend=default_backend()
+            )
+        else:
+            # Base64 encoded - try multiple formats
+            raw_key_bytes = base64.b64decode(api_key_private_key)
 
-        # Load as EC private key (assuming secp256r1/prime256v1 curve used by Coinbase)
-        private_key_obj = ec.derive_private_key(
-            int.from_bytes(private_key_bytes[:32], 'big'),
-            ec.SECP256R1(),
-            default_backend()
-        )
-
-        # Convert to PEM format
-        pem_key = private_key_obj.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-        )
+            try:
+                # Try loading as DER-encoded EC private key (SEC1 format)
+                pem_key = serialization.load_der_private_key(
+                    raw_key_bytes,
+                    password=None,
+                    backend=default_backend()
+                )
+                logger.info("Loaded private key as DER format")
+            except Exception as der_error:
+                logger.warning(f"Failed to load as DER: {der_error}, trying raw key bytes")
+                # Fall back to deriving from raw bytes (first 32 bytes as private key value)
+                if len(raw_key_bytes) >= 32:
+                    private_value = int.from_bytes(raw_key_bytes[:32], 'big')
+                    pem_key = ec.derive_private_key(
+                        private_value,
+                        ec.SECP256R1(),
+                        default_backend()
+                    )
+                    logger.info("Derived EC key from raw bytes")
+                else:
+                    raise ValueError(f"Invalid private key length: {len(raw_key_bytes)} bytes")
 
         # Create JWT using ES256 algorithm
         token = pyjwt.encode(
@@ -256,7 +275,8 @@ def generate_onramp_session_token(request):
 
         # Parse response
         data = response.json()
-        session_token = data.get('data', {}).get('token')
+        # Response format is {"token": "...", "channel_id": ""}
+        session_token = data.get('token')
 
         if not session_token:
             logger.error(f"No token in response: {data}")

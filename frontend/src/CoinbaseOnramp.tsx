@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { initOnRamp, CBPayInstanceType } from '@coinbase/cbpay-js';
-import api from './api';
 
 interface CoinbaseOnrampProps {
   walletAddress: string;
@@ -17,23 +16,17 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
 
     async function initializeOnramp() {
       try {
-        console.log('Fetching session token for wallet:', walletAddress);
+        console.log('Initializing Coinbase Onramp for wallet:', walletAddress);
         setIsLoading(true);
         setError(null);
 
-        // Fetch session token from backend using centralized API instance
-        const response = await api.post('/api/wallet/onramp-session-token/', {});
-
-        const sessionToken = response.data.sessionToken;
-        console.log('✅ Session token received');
-
-        // Initialize Coinbase Onramp with session token
+        // Initialize Coinbase Onramp with widgetParameters
+        // Note: sessionToken is NOT supported by initOnRamp, only by generateOnRampURL
         initOnRamp({
           appId: import.meta.env.VITE_COINBASE_APP_ID || '40646732-b0cc-4432-9767-152c71112a6e',
-          sessionToken: sessionToken,  // Pass the session token
           widgetParameters: {
             addresses: { [walletAddress]: ['base'] },
-            assets: ['USDC'],
+            assets: ['USDC']
           },
           experienceLoggedIn: 'popup',
           experienceLoggedOut: 'popup',
@@ -62,8 +55,8 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
           setIsLoading(false);
         });
       } catch (err: any) {
-        console.error('❌ Error fetching session token:', err);
-        setError(err.response?.data?.error || 'Failed to initialize onramp');
+        console.error('❌ Error initializing onramp:', err);
+        setError('Failed to initialize onramp');
         setIsLoading(false);
       }
     }
