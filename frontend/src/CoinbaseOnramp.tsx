@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { initOnRamp, CBPayInstanceType } from '@coinbase/cbpay-js';
+import { useState } from 'react';
+import { generateOnRampURL } from '@coinbase/cbpay-js';
+import api from './api';
 
 interface CoinbaseOnrampProps {
   walletAddress: string;
@@ -7,73 +8,64 @@ interface CoinbaseOnrampProps {
 }
 
 export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps) {
-  const [onrampInstance, setOnrampInstance] = useState<CBPayInstanceType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let instance: CBPayInstanceType | null = null;
+  const handleFundAccount = async () => {
+    try {
+      console.log('Fetching session token for wallet:', walletAddress);
+      setIsLoading(true);
+      setError(null);
 
-    async function initializeOnramp() {
-      try {
-        console.log('Initializing Coinbase Onramp for wallet:', walletAddress);
-        setIsLoading(true);
-        setError(null);
+      // Fetch session token from backend
+      const response = await api.post('/api/wallet/onramp-session-token/', {});
+      const sessionToken = response.data.sessionToken;
+      console.log('✅ Session token received');
 
-        // Initialize Coinbase Onramp with widgetParameters
-        // Note: sessionToken is NOT supported by initOnRamp, only by generateOnRampURL
-        initOnRamp({
-          appId: import.meta.env.VITE_COINBASE_APP_ID || '40646732-b0cc-4432-9767-152c71112a6e',
-          widgetParameters: {
-            addresses: { [walletAddress]: ['base'] },
-            assets: ['USDC']
-          },
-          experienceLoggedIn: 'popup',
-          experienceLoggedOut: 'popup',
-          closeOnExit: true,
-          closeOnSuccess: true,
-          onSuccess: () => {
-            console.log('✅ Coinbase Onramp purchase successful!');
-            if (onSuccess) onSuccess();
-          },
-          onExit: () => {
-            console.log('ℹ️ Coinbase Onramp closed');
-          },
-          onEvent: (event) => {
-            console.log('📊 Coinbase Onramp event:', event);
-          },
-        }, (error, inst) => {
-          if (error) {
-            console.error('❌ Failed to initialize Coinbase Onramp:', error);
-            setError('Failed to initialize Coinbase Onramp');
-            setIsLoading(false);
-            return;
-          }
-          console.log('✅ Coinbase Onramp initialized successfully');
-          instance = inst;
-          setOnrampInstance(inst);
-          setIsLoading(false);
-        });
-      } catch (err: any) {
-        console.error('❌ Error initializing onramp:', err);
-        setError('Failed to initialize onramp');
-        setIsLoading(false);
+      // Generate onramp URL with session token
+      // Note: Your Coinbase project requires sessionToken for security
+      const onrampURL = generateOnRampURL({
+        sessionToken: sessionToken,
+        // Optional: You can still pass appId but sessionToken takes precedence
+        appId: import.meta.env.VITE_COINBASE_APP_ID || '40646732-b0cc-4432-9767-152c71112a6e',
+      });
+
+      console.log('✅ Opening Coinbase Onramp popup');
+
+      // Open in a popup window
+      const width = 450;
+      const height = 730;
+      const left = (window.innerWidth - width) / 2;
+      const top = (window.innerHeight - height) / 2;
+
+      const popup = window.open(
+        onrampURL,
+        'Coinbase Onramp',
+        `width=${width},height=${height},left=${left},top=${top},popup=yes`
+      );
+
+      if (!popup) {
+        throw new Error('Popup blocked. Please allow popups for this site.');
       }
-    }
 
-    initializeOnramp();
+      // Monitor popup for close event
+      const checkPopup = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopup);
+          console.log('ℹ️ Coinbase Onramp popup closed');
+          setIsLoading(false);
+          // Refresh balance when popup closes
+          if (onSuccess) {
+            setTimeout(onSuccess, 1000);
+          }
+        }
+      }, 500);
 
-    return () => {
-      instance?.destroy();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletAddress]);
-
-  const handleFundAccount = () => {
-    if (onrampInstance) {
-      onrampInstance.open();
-    } else if (error) {
-      alert(error);
+      setIsLoading(false);
+    } catch (err: any) {
+      console.error('❌ Error opening Coinbase Onramp:', err);
+      setError(err.response?.data?.error || err.message || 'Failed to open onramp');
+      setIsLoading(false);
     }
   };
 
