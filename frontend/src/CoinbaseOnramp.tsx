@@ -24,10 +24,12 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
 
       // Generate onramp URL with session token
       // Note: Your Coinbase project requires sessionToken for security
+      // Even with sessionToken, we still need to pass addresses to generateOnRampURL
       const onrampURL = generateOnRampURL({
-        sessionToken: sessionToken,
-        // Optional: You can still pass appId but sessionToken takes precedence
         appId: import.meta.env.VITE_COINBASE_APP_ID || '40646732-b0cc-4432-9767-152c71112a6e',
+        sessionToken: sessionToken,
+        addresses: { [walletAddress]: ['base'] },
+        assets: ['USDC'],
       });
 
       console.log('✅ Opening Coinbase Onramp popup');
