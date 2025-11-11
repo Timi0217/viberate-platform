@@ -815,6 +815,36 @@ body {
   margin-top: 24px;
 }
 
+.modal-footer .btn {
+  min-width: 120px;
+  justify-content: center;
+}
+
+.modal-footer .btn-outline {
+  background: white;
+  border: 2px solid #E5E7EB;
+  color: #6B7280;
+  font-weight: 600;
+}
+
+.modal-footer .btn-outline:hover:not(:disabled) {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  transform: none;
+}
+
+.modal-footer .btn-primary {
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  font-weight: 600;
+}
+
+.modal-footer .btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 82, 255, 0.3);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .auth-card {
