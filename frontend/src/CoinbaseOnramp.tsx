@@ -34,7 +34,7 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
 
       console.log('✅ Opening Coinbase Onramp popup');
 
-      // Open in a popup window
+      // Try to open in a popup window first
       const width = 450;
       const height = 730;
       const left = (window.innerWidth - width) / 2;
@@ -46,24 +46,30 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
         `width=${width},height=${height},left=${left},top=${top},popup=yes`
       );
 
-      if (!popup) {
-        throw new Error('Popup blocked. Please allow popups for this site.');
-      }
-
-      // Monitor popup for close event
-      const checkPopup = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkPopup);
-          console.log('ℹ️ Coinbase Onramp popup closed');
-          setIsLoading(false);
-          // Refresh balance when popup closes
-          if (onSuccess) {
-            setTimeout(onSuccess, 1000);
-          }
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        // Popup was blocked, open in new tab as fallback
+        console.log('⚠️ Popup blocked, opening in new tab');
+        window.open(onrampURL, '_blank');
+        setIsLoading(false);
+        // Refresh balance after a delay (since we can't monitor tab close)
+        if (onSuccess) {
+          setTimeout(onSuccess, 5000);
         }
-      }, 500);
-
-      setIsLoading(false);
+      } else {
+        // Monitor popup for close event
+        const checkPopup = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkPopup);
+            console.log('ℹ️ Coinbase Onramp popup closed');
+            setIsLoading(false);
+            // Refresh balance when popup closes
+            if (onSuccess) {
+              setTimeout(onSuccess, 1000);
+            }
+          }
+        }, 500);
+        setIsLoading(false);
+      }
     } catch (err: any) {
       console.error('❌ Error opening Coinbase Onramp:', err);
       setError(err.response?.data?.error || err.message || 'Failed to open onramp');
