@@ -15,7 +15,7 @@ import './App.css';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [view, setView] = useState<'login' | 'register'>('login');
+  const [view, setView] = useState<'landing' | 'login' | 'register'>('landing');
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
