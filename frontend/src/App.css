@@ -71,10 +71,113 @@ body {
   font-weight: 500;
 }
 
+/* Landing Page */
+.landing-container {
+  min-height: 100vh;
+  background: #1D1D1F;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-header {
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.landing-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.landing-header .brand-icon {
+  color: #FFFFFF;
+}
+
+.landing-header .brand-text {
+  color: #FFFFFF;
+}
+
+.landing-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+}
+
+.landing-content {
+  max-width: 800px;
+  text-align: center;
+}
+
+.landing-headline {
+  font-size: 56px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0 0 48px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+.landing-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-landing {
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+.btn-landing-primary {
+  background: #FFFFFF;
+  color: #1D1D1F;
+}
+
+.btn-landing-primary:hover {
+  background: #F5F5F7;
+}
+
+.btn-landing-secondary {
+  background: transparent;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-landing-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 768px) {
+  .landing-headline {
+    font-size: 36px;
+  }
+
+  .landing-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-landing {
+    width: 100%;
+  }
+}
+
 /* Auth Pages */
 .auth-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #FAFAFA;
   display: flex;
   align-items: center;
   justify-content: center;

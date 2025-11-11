@@ -268,11 +268,49 @@ function App() {
 
   // Login/Register View
   if (!isAuthenticated) {
+    // Landing page
+    if (view !== 'login' && view !== 'register') {
+      return (
+        <div className="landing-container">
+          <header className="landing-header">
+            <div className="landing-header-content">
+              <div className="header-brand">
+                <svg className="brand-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <path d="M6 16h4M12 12v8M16 8v16M20 12v8M26 16h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+                <h1 className="brand-text">Viberate</h1>
+              </div>
+            </div>
+          </header>
+
+          <main className="landing-main">
+            <div className="landing-content">
+              <h1 className="landing-headline">
+                Data annotation for AI researchers.<br />
+                Done right. Done fast.
+              </h1>
+              <div className="landing-actions">
+                <button onClick={() => setView('register')} className="btn-landing btn-landing-primary">
+                  Make an Account
+                </button>
+                <button onClick={() => window.location.href = 'mailto:contact@viberate.com'} className="btn-landing btn-landing-secondary">
+                  Contact Us
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // Auth forms
     return (
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-logo">
-            <div className="auth-logo-icon">🎯</div>
+            <svg width="48" height="48" viewBox="0 0 32 32" fill="none" style={{ margin: '0 auto 16px' }}>
+              <path d="M6 16h4M12 12v8M16 8v16M20 12v8M26 16h-4" stroke="#1D1D1F" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
             <h1 className="auth-title">
               {view === 'login' ? 'Welcome Back' : 'Join Viberate'}
             </h1>
