@@ -40,6 +40,7 @@ function App() {
   const [projects, setProjects] = useState<LabelStudioProject[]>([]);
   const [availableProjects, setAvailableProjects] = useState<any[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [showConnectionModal, setShowConnectionModal] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -176,6 +177,7 @@ function App() {
     try {
       const newConnection = await labelStudioAPI.createConnection(connectionForm);
       setConnection(newConnection);
+      setShowConnectionModal(false);
       loadProjects();
     } catch (err: any) {
       setError(err.response?.data?.email?.[0] || err.response?.data?.error || 'Failed to connect');
@@ -487,62 +489,15 @@ function App() {
                 Link your Label Studio account to start managing annotation projects
               </p>
 
-              <form onSubmit={handleCreateConnection} className="connection-form-compact">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Email Address</label>
-                    <input
-                      type="email"
-                      className="form-input"
-                      placeholder="your@email.com"
-                      value={connectionForm.email}
-                      onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Password</label>
-                    <input
-                      type="password"
-                      className="form-input"
-                      placeholder="Your Label Studio password"
-                      value={connectionForm.password}
-                      onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-security-note">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-                  </svg>
-                  <span>We securely save your API token. Your password is never stored.</span>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-primary btn-connect"
-                >
-                  {loading ? (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
-                        <circle cx="12" cy="12" r="10" opacity="0.25"/>
-                        <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
-                      </svg>
-                      Connecting...
-                    </>
-                  ) : (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                      </svg>
-                      Connect to Label Studio
-                    </>
-                  )}
-                </button>
-              </form>
+              <button
+                onClick={() => setShowConnectionModal(true)}
+                className="btn btn-primary btn-large"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                Connect Label Studio
+              </button>
             </div>
           ) : (
             <div>
@@ -668,6 +623,89 @@ function App() {
         </div>
       )}
         </main>
+
+        {/* Connection Modal */}
+        {showConnectionModal && (
+          <div className="modal-overlay" onClick={() => setShowConnectionModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3 className="modal-title">Connect to Label Studio</h3>
+                <button
+                  onClick={() => setShowConnectionModal(false)}
+                  className="modal-close"
+                  aria-label="Close"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateConnection} className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Email Address</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="your@email.com"
+                    value={connectionForm.email}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Your Label Studio password"
+                    value={connectionForm.password}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
+                    required
+                  />
+                </div>
+
+                {error && (
+                  <div className="modal-error">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    {error}
+                  </div>
+                )}
+
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    onClick={() => setShowConnectionModal(false)}
+                    className="btn btn-outline"
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn btn-primary"
+                  >
+                    {loading ? (
+                      <>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+                          <circle cx="12" cy="12" r="10" opacity="0.25"/>
+                          <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
+                        </svg>
+                        Connecting...
+                      </>
+                    ) : (
+                      'Connect'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   } catch (error) {
