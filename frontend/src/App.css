@@ -187,14 +187,13 @@ body {
 }
 
 .btn-primary {
-  background: var(--primary-gradient);
+  background: #007AFF;
   color: white;
   width: 100%;
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -10px rgba(0, 82, 255, 0.5);
+  background: #0051D5;
 }
 
 .btn-primary:disabled {
@@ -234,13 +233,22 @@ body {
 }
 
 .btn-fund-account:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 82, 255, 0.35) !important;
+  background: #0051D5 !important;
 }
 
 .btn-large {
-  padding: 16px 32px;
-  font-size: 16px;
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 500;
+  background: #007AFF;
+  color: white;
+  border-radius: 10px;
+}
+
+.btn-large:hover:not(:disabled) {
+  background: #0051D5;
+  transform: none;
+  box-shadow: none;
 }
 
 .auth-switch {
@@ -276,7 +284,7 @@ body {
 /* Main Dashboard */
 .dashboard-container {
   min-height: 100vh;
-  background: #F8FAFC;
+  background: #FAFAFA;
   padding: 0;
 }
 
@@ -341,23 +349,24 @@ body {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-  padding: 8px 16px;
+  background: #F5F5F7;
+  padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid #BFDBFE;
 }
 
 .balance-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0052FF;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1D1D1F;
+  letter-spacing: -0.01em;
 }
 
 .balance-currency {
-  font-size: 12px;
-  font-weight: 600;
-  color: #3B82F6;
+  font-size: 13px;
+  font-weight: 500;
+  color: #86868B;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .user-info {
@@ -392,12 +401,12 @@ body {
 .wallet-actions-bar {
   background: white;
   border-radius: 12px;
-  padding: 16px 24px;
-  margin-bottom: 24px;
+  padding: 18px 24px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .wallet-info {
@@ -439,34 +448,37 @@ body {
 /* Card */
 .card {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
   animation: slideUp 0.5s ease-out;
 }
 
 .card-header {
-  padding: 24px 32px;
-  border-bottom: 1px solid #F3F4F6;
-  background: linear-gradient(to bottom, #FAFBFC 0%, #FFFFFF 100%);
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: white;
 }
 
 .card-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 4px 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1D1D1F;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
 }
 
 .card-subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
+  font-size: 15px;
+  color: #86868B;
   margin: 0;
   font-weight: 400;
+  line-height: 1.4;
 }
 
 .card-body {
-  padding: 32px;
+  padding: 40px 32px;
+  background: white;
 }
 
 /* Alert Box */
@@ -495,35 +507,37 @@ body {
 /* Connection Empty State */
 .connection-empty-state {
   text-align: center;
-  padding: 48px 32px;
-  max-width: 600px;
+  padding: 80px 32px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
 .connection-icon {
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
   margin: 0 auto 24px;
-  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-  border-radius: 20px;
+  background: #F5F5F7;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0052FF;
+  color: #007AFF;
 }
 
 .connection-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 600;
+  color: #1D1D1F;
   margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
 }
 
 .connection-description {
-  color: var(--text-secondary);
+  color: #86868B;
   margin: 0 0 32px 0;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 @media (max-width: 768px) {
@@ -611,12 +625,12 @@ body {
   border-radius: 12px;
   padding: 24px;
   transition: all 0.2s;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .project-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 82, 255, 0.1), 0 4px 6px -2px rgba(0, 82, 255, 0.05);
-  transform: translateY(-2px);
+  border-color: rgba(0, 122, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 .project-header {
@@ -834,15 +848,14 @@ body {
 }
 
 .modal-footer .btn-primary {
-  background: var(--primary-gradient);
+  background: #007AFF;
   border: none;
   color: white;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .modal-footer .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(0, 82, 255, 0.3);
+  background: #0051D5;
 }
 
 /* Responsive */

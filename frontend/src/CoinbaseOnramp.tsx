@@ -83,20 +83,19 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
       disabled={isLoading || !!error}
       className="btn-fund-account"
       style={{
-        padding: '10px 20px',
-        background: isLoading || error ? '#9CA3AF' : 'linear-gradient(135deg, #0052FF 0%, #00D4FF 100%)',
+        padding: '9px 18px',
+        background: isLoading || error ? '#9CA3AF' : '#007AFF',
         color: 'white',
         border: 'none',
         borderRadius: '8px',
         cursor: isLoading || error ? 'not-allowed' : 'pointer',
         fontSize: '14px',
-        fontWeight: '600',
+        fontWeight: '500',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: '7px',
         opacity: isLoading || error ? 0.6 : 1,
-        transition: 'all 0.2s',
-        boxShadow: !isLoading && !error ? '0 4px 12px rgba(0, 82, 255, 0.25)' : 'none'
+        transition: 'all 0.2s'
       }}
     >
       {isLoading ? (

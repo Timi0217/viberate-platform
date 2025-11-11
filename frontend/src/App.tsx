@@ -407,7 +407,7 @@ function App() {
               <div className="wallet-section">
                 {user.base_wallet_address && (
                   <div className="balance-display">
-                    <span className="balance-value">${user.usdc_balance || '0.00'}</span>
+                    <span className="balance-value">${parseFloat(user.usdc_balance || '0').toFixed(2)}</span>
                     <span className="balance-currency">USDC</span>
                   </div>
                 )}
