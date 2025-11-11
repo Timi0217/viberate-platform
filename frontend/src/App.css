@@ -314,24 +314,21 @@ body {
 }
 
 .brand-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--primary-gradient);
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  color: #1D1D1F;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
 }
 
-.brand-text h1 {
-  font-size: 22px;
-  font-weight: 700;
+.brand-text {
+  font-size: 20px;
+  font-weight: 600;
   margin: 0;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1D1D1F;
+  letter-spacing: -0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
 }
 
 .user-menu {

@@ -398,10 +398,10 @@ function App() {
         <header className="dashboard-header">
           <div className="header-content">
             <div className="header-brand">
-              <div className="brand-icon">🎯</div>
-              <div className="brand-text">
-                <h1>Viberate</h1>
-              </div>
+              <svg className="brand-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path d="M6 16h4M12 12v8M16 8v16M20 12v8M26 16h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <h1 className="brand-text">Viberate</h1>
             </div>
             <div className="user-menu">
               <div className="wallet-section">
