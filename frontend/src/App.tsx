@@ -206,12 +206,19 @@ function App() {
   };
 
   const loadAvailableProjects = async () => {
+    setLoading(true);
+    setError('');
     try {
       const data = await labelStudioAPI.getAvailableProjects();
       setAvailableProjects(Array.isArray(data) ? data : []);
+      if (!data || data.length === 0) {
+        setError('No projects found in Label Studio. Create a project in Label Studio first.');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load available projects');
       setAvailableProjects([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -698,8 +705,9 @@ function App() {
                   <button
                     onClick={loadAvailableProjects}
                     className="btn btn-success"
+                    disabled={loading}
                   >
-                    + Import New Project
+                    {loading ? 'Loading...' : '+ Import New Project'}
                   </button>
                 </div>
 
