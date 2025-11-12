@@ -151,6 +151,7 @@ function App() {
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem('authToken');
+      setView('landing'); // Redirect to landing page after logout
     }
   };
 
@@ -368,7 +369,7 @@ function App() {
               <path d="M6 16h4M12 12v8M16 8v16M20 12v8M26 16h-4" stroke="#1D1D1F" strokeWidth="2.5" strokeLinecap="round"/>
             </svg>
             <h1 className="auth-title">
-              {view === 'login' ? 'Welcome Back' : 'Join Viberate'}
+              {view === 'login' ? 'Welcome to Viberate' : 'Join Viberate'}
             </h1>
             <p className="auth-subtitle">
               {view === 'login'
