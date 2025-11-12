@@ -158,24 +158,30 @@ function App() {
   const loadConnection = async () => {
     try {
       const data = await labelStudioAPI.getConnection();
+      console.log('Load connection response:', data);
 
       // Check if data is an array with connections
       if (Array.isArray(data)) {
         if (data.length > 0 && data[0].id && data[0].labelstudio_url) {
+          console.log('Setting connection from array:', data[0]);
           setConnection(data[0]);
         } else {
+          console.log('Empty array or invalid connection');
           setConnection(null);
         }
       }
       // Check if data is a single connection object
       else if (data && typeof data === 'object' && data.id && data.labelstudio_url) {
+        console.log('Setting connection from object:', data);
         setConnection(data);
       }
       // No valid connection
       else {
+        console.log('No valid connection found');
         setConnection(null);
       }
     } catch (err) {
+      console.error('Load connection error:', err);
       setConnection(null);
     }
   };
@@ -199,8 +205,10 @@ function App() {
   const loadProjects = async () => {
     try {
       const data = await labelStudioAPI.listProjects();
+      console.log('Load projects response:', data);
       setProjects(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.error('Load projects error:', err);
       setProjects([]);
     }
   };
@@ -212,7 +220,7 @@ function App() {
       const data = await labelStudioAPI.getAvailableProjects();
       setAvailableProjects(Array.isArray(data) ? data : []);
       if (!data || data.length === 0) {
-        setError('No projects found in Label Studio. Create a project in Label Studio first.');
+        setError('All Label Studio projects have been imported. Create new projects in Label Studio to import more.');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load available projects');
@@ -673,10 +681,7 @@ function App() {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
-                  <div>
-                    <span className="connection-success-label">Connected to Label Studio</span>
-                    <span className="connection-success-url">{connection.labelstudio_url}</span>
-                  </div>
+                  <span className="connection-success-label">Connected to Label Studio</span>
                 </div>
                 <button
                   onClick={async () => {
