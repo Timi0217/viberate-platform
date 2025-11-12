@@ -80,14 +80,16 @@ body {
 }
 
 .landing-header {
-  padding: 24px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 0;
 }
 
 .landing-header-content {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .landing-header .brand-icon {
@@ -96,6 +98,16 @@ body {
 
 .landing-header .brand-text {
   color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.landing-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .landing-main {
@@ -103,21 +115,33 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 32px;
+  padding: 100px 48px;
 }
 
 .landing-content {
-  max-width: 800px;
+  max-width: 1000px;
   text-align: center;
 }
 
 .landing-headline {
-  font-size: 56px;
+  font-size: 72px;
   font-weight: 600;
   color: #FFFFFF;
+  margin: 0 0 24px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+.landing-subheadline {
+  font-size: 20px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0 0 48px;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
 }
 
@@ -129,14 +153,17 @@ body {
 }
 
 .btn-landing {
-  padding: 14px 32px;
+  padding: 16px 36px;
   font-size: 16px;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   border: none;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn-landing-primary {
@@ -146,31 +173,109 @@ body {
 
 .btn-landing-primary:hover {
   background: #F5F5F7;
+  transform: translateY(-1px);
 }
 
 .btn-landing-secondary {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.1);
   color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .btn-landing-secondary:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-landing-nav {
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+.btn-landing-nav:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-landing-nav-primary {
+  background: #FFFFFF;
+  color: #1D1D1F;
+  border: none;
+}
+
+.btn-landing-nav-primary:hover {
+  background: #F5F5F7;
+}
+
+@media (max-width: 968px) {
+  .landing-headline {
+    font-size: 56px;
+  }
+
+  .landing-subheadline {
+    font-size: 18px;
+  }
+
+  .landing-header-content {
+    padding: 0 32px;
+  }
+
+  .landing-main {
+    padding: 80px 32px;
+  }
 }
 
 @media (max-width: 768px) {
   .landing-headline {
-    font-size: 36px;
+    font-size: 42px;
+  }
+
+  .landing-subheadline {
+    font-size: 16px;
+    margin-bottom: 36px;
   }
 
   .landing-actions {
     flex-direction: column;
     width: 100%;
+    gap: 12px;
   }
 
   .btn-landing {
     width: 100%;
+    padding: 14px 28px;
+  }
+
+  .landing-header-content {
+    padding: 0 24px;
+  }
+
+  .landing-main {
+    padding: 60px 24px;
+  }
+
+  .landing-nav {
+    gap: 8px;
+  }
+
+  .btn-landing-nav {
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+
+  .landing-header .brand-text {
+    font-size: 16px;
   }
 }
 

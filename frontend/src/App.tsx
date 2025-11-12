@@ -275,10 +275,21 @@ function App() {
           <header className="landing-header">
             <div className="landing-header-content">
               <div className="header-brand">
-                <svg className="brand-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <svg className="brand-icon" width="28" height="28" viewBox="0 0 32 32" fill="none">
                   <path d="M6 16h4M12 12v8M16 8v16M20 12v8M26 16h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
                 </svg>
                 <h1 className="brand-text">Viberate</h1>
+              </div>
+              <div className="landing-nav">
+                <button onClick={() => setView('register')} className="btn-landing-nav btn-landing-nav-primary">
+                  Book a Consultation
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </button>
+                <button onClick={() => window.location.href = 'mailto:contact@viberate.com'} className="btn-landing-nav">
+                  Contact Us
+                </button>
               </div>
             </div>
           </header>
@@ -286,12 +297,17 @@ function App() {
           <main className="landing-main">
             <div className="landing-content">
               <h1 className="landing-headline">
-                Data annotation for AI researchers.<br />
-                Done right. Done fast.
+                Data annotation for AI researchers. Done right. Done fast.
               </h1>
+              <p className="landing-subheadline">
+                From gathering datasets to quality labeling to delivery, we handle the complexity end-to-end and deliver ready-to-train data with unmatched quality.
+              </p>
               <div className="landing-actions">
                 <button onClick={() => setView('register')} className="btn-landing btn-landing-primary">
-                  Make an Account
+                  Book a Consultation
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
                 </button>
                 <button onClick={() => window.location.href = 'mailto:contact@viberate.com'} className="btn-landing btn-landing-secondary">
                   Contact Us
