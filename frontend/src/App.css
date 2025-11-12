@@ -128,9 +128,13 @@ body {
   font-weight: 600;
   color: #FFFFFF;
   margin: 0 0 24px;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.03em;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+.landing-headline .no-break {
+  white-space: nowrap;
 }
 
 .landing-subheadline {
