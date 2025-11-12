@@ -1,15 +1,16 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://django-production-3340.up.railway.app';
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,  // Enable cookies for httpOnly auth
 });
 
-// Add auth token to requests if available
+// Add auth token to requests if available (backward compatibility)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
   if (token) {
@@ -152,6 +153,31 @@ export const tasksAPI = {
 
   get: async (id: number) => {
     const response = await api.get<Task>(`/api/tasks/${id}/`);
+    return response.data;
+  },
+};
+
+// Assignments API
+export const assignmentsAPI = {
+  list: async (status?: string) => {
+    const params = status ? { status } : {};
+    const response = await api.get('/api/task-assignments/', { params });
+    return response.data;
+  },
+
+  approve: async (assignmentId: number, paymentAmount?: number, qualityScore?: number, feedback?: string) => {
+    const response = await api.post(`/api/task-assignments/${assignmentId}/approve/`, {
+      payment_amount: paymentAmount,
+      quality_score: qualityScore,
+      feedback: feedback
+    });
+    return response.data;
+  },
+
+  reject: async (assignmentId: number, reason?: string) => {
+    const response = await api.post(`/api/task-assignments/${assignmentId}/reject/`, {
+      reason: reason || 'Does not meet quality standards'
+    });
     return response.data;
   },
 };

@@ -3,6 +3,7 @@ import {
   authAPI,
   labelStudioAPI,
   tasksAPI,
+  assignmentsAPI,
   walletAPI,
   type User,
   type LabelStudioConnection,
@@ -10,6 +11,7 @@ import {
   type Task
 } from './api';
 import { CoinbaseOnramp } from './CoinbaseOnramp';
+import { validateEmail, validatePassword, validateUsername, validateURL, validatePaymentAmount } from './utils/validation';
 import './App.css';
 
 function App() {
@@ -34,37 +36,33 @@ function App() {
   const [connection, setConnection] = useState<LabelStudioConnection | null>(null);
   const [connectionForm, setConnectionForm] = useState({
     labelstudio_url: 'https://app.heartex.com',
-    email: '',
-    password: '',
+    api_token: '',
   });
   const [projects, setProjects] = useState<LabelStudioProject[]>([]);
   const [availableProjects, setAvailableProjects] = useState<any[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
+  const [pendingAssignments, setPendingAssignments] = useState<any[]>([]);
 
   useEffect(() => {
     checkAuth();
   }, []);
 
   useEffect(() => {
-    console.log('User effect triggered:', { isAuthenticated, userType: user?.user_type });
     if (isAuthenticated && user?.user_type === 'researcher') {
-      console.log('Loading connection and projects...');
       setError(''); // Clear any previous errors
-      loadConnection().catch(err => console.log('No connection yet:', err));
-      loadProjects().catch(err => console.log('No projects yet:', err));
+      loadConnection().catch(() => {});
+      loadProjects().catch(() => {});
+      loadPendingAssignments().catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user]);
 
   const checkAuth = async () => {
-    console.log('Checking authentication...');
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
-        console.log('Token found, fetching profile...');
         const userData = await authAPI.getProfile();
-        console.log('Profile received:', userData);
         setUser(userData);
         setIsAuthenticated(true);
       } catch (err) {
@@ -95,15 +93,33 @@ function App() {
     setLoading(true);
     setError('');
 
-    // Validate password confirmation
-    if (registerData.password !== registerData.confirmPassword) {
-      setError('Passwords do not match');
+    // Validate username
+    const usernameError = validateUsername(registerData.username);
+    if (usernameError) {
+      setError(usernameError);
       setLoading(false);
       return;
     }
 
-    if (registerData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Validate email
+    const emailError = validateEmail(registerData.email);
+    if (emailError) {
+      setError(emailError);
+      setLoading(false);
+      return;
+    }
+
+    // Validate password
+    const passwordError = validatePassword(registerData.password);
+    if (passwordError) {
+      setError(passwordError);
+      setLoading(false);
+      return;
+    }
+
+    // Validate password confirmation
+    if (registerData.password !== registerData.confirmPassword) {
+      setError('Passwords do not match');
       setLoading(false);
       return;
     }
@@ -140,32 +156,25 @@ function App() {
 
   const loadConnection = async () => {
     try {
-      console.log('Loading connection...');
       const data = await labelStudioAPI.getConnection();
-      console.log('Connection data received:', data);
 
       // Check if data is an array with connections
       if (Array.isArray(data)) {
         if (data.length > 0 && data[0].id && data[0].labelstudio_url) {
-          console.log('Valid connection found in array:', data[0]);
           setConnection(data[0]);
         } else {
-          console.log('Empty array or invalid connection, setting to null');
           setConnection(null);
         }
       }
       // Check if data is a single connection object
       else if (data && typeof data === 'object' && data.id && data.labelstudio_url) {
-        console.log('Valid connection object found:', data);
         setConnection(data);
       }
       // No valid connection
       else {
-        console.log('No valid connection found, setting to null');
         setConnection(null);
       }
     } catch (err) {
-      console.log('Error loading connection:', err);
       setConnection(null);
     }
   };
@@ -188,24 +197,18 @@ function App() {
 
   const loadProjects = async () => {
     try {
-      console.log('Loading projects...');
       const data = await labelStudioAPI.listProjects();
-      console.log('Projects loaded:', data);
       setProjects(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Failed to load projects:', err);
       setProjects([]);
     }
   };
 
   const loadAvailableProjects = async () => {
     try {
-      console.log('Loading available projects...');
       const data = await labelStudioAPI.getAvailableProjects();
-      console.log('Available projects loaded:', data);
       setAvailableProjects(Array.isArray(data) ? data : []);
     } catch (err: any) {
-      console.error('Failed to load available projects:', err);
       setError(err.response?.data?.error || 'Failed to load available projects');
       setAvailableProjects([]);
     }
@@ -239,6 +242,48 @@ function App() {
       setTasks(data);
     } catch (err) {
       console.error('Failed to load tasks:', err);
+    }
+  };
+
+  const loadPendingAssignments = async () => {
+    try {
+      const data = await assignmentsAPI.list('submitted');
+      setPendingAssignments(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setPendingAssignments([]);
+    }
+  };
+
+  const handleApproveAssignment = async (assignmentId: number, paymentAmount: number) => {
+    // Validate payment amount
+    const paymentError = validatePaymentAmount(paymentAmount);
+    if (paymentError) {
+      setError(paymentError);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await assignmentsAPI.approve(assignmentId, paymentAmount);
+      await loadPendingAssignments();
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to approve assignment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectAssignment = async (assignmentId: number, reason: string) => {
+    setLoading(true);
+    try {
+      await assignmentsAPI.reject(assignmentId, reason);
+      await loadPendingAssignments();
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to reject assignment');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -439,8 +484,6 @@ function App() {
   }
 
   // Main Dashboard
-  console.log('Rendering dashboard. User:', user);
-
   try {
     return (
       <div className="dashboard-container">
@@ -510,6 +553,87 @@ function App() {
           )}
 
       {user?.user_type === 'researcher' ? (
+        <>
+        {/* Pending Approvals Section */}
+        {pendingAssignments.length > 0 && (
+          <div className="card" style={{ marginBottom: '24px' }}>
+            <div className="card-header">
+              <div>
+                <h2 className="card-title">Pending Approvals</h2>
+                <p className="card-subtitle">Review and approve submitted annotations ({pendingAssignments.length} pending)</p>
+              </div>
+            </div>
+            <div className="card-body">
+              {pendingAssignments.map((assignment: any) => (
+                <div key={assignment.id} className="assignment-card" style={{
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  marginBottom: '16px',
+                  backgroundColor: 'var(--bg-secondary)'
+                }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <strong>Assignment #{assignment.id}</strong>
+                    <span style={{ marginLeft: '12px', fontSize: '14px', color: 'var(--text-muted)' }}>
+                      Task: {assignment.task?.title || `Task #${assignment.task_id}`}
+                    </span>
+                  </div>
+                  <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }}>
+                    <strong>Annotation Result:</strong>
+                    <pre style={{ marginTop: '8px', fontSize: '12px', overflow: 'auto', maxHeight: '200px' }}>
+                      {JSON.stringify(assignment.result, null, 2)}
+                    </pre>
+                  </div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px' }}>
+                      Payment Amount (USDC):
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      defaultValue="5.00"
+                      id={`payment-${assignment.id}`}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '4px',
+                        border: '1px solid var(--border-color)',
+                        width: '150px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        const input = document.getElementById(`payment-${assignment.id}`) as HTMLInputElement;
+                        const amount = parseFloat(input?.value || '5');
+                        handleApproveAssignment(assignment.id, amount);
+                      }}
+                      className="btn btn-primary"
+                      disabled={loading}
+                    >
+                      Approve & Pay
+                    </button>
+                    <button
+                      onClick={() => {
+                        const reason = prompt('Reason for rejection (optional):');
+                        if (reason !== null) {
+                          handleRejectAssignment(assignment.id, reason);
+                        }
+                      }}
+                      className="btn btn-secondary"
+                      disabled={loading}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Projects Section */}
         <div className="card">
           <div className="card-header">
             <div>
@@ -524,7 +648,6 @@ function App() {
                                       connection.id &&
                                       connection.labelstudio_url &&
                                       connection.labelstudio_url.trim() !== '';
-            console.log('Render check - Connection state:', { connection, hasValidConnection });
             return !hasValidConnection;
           })() ? (
             <div className="connection-empty-state">
@@ -646,6 +769,7 @@ function App() {
           )}
           </div>
         </div>
+        </>
       ) : (
         <div className="card">
           <div className="card-body annotator-container">
@@ -679,27 +803,19 @@ function App() {
 
               <form onSubmit={handleCreateConnection} className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    placeholder="your@email.com"
-                    value={connectionForm.email}
-                    onChange={(e) => setConnectionForm({ ...connectionForm, email: e.target.value })}
-                    required
-                    autoFocus
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
+                  <label className="form-label">API Token</label>
                   <input
                     type="password"
                     className="form-input"
-                    placeholder="Your Label Studio password"
-                    value={connectionForm.password}
-                    onChange={(e) => setConnectionForm({ ...connectionForm, password: e.target.value })}
+                    placeholder="Enter your Label Studio API token"
+                    value={connectionForm.api_token}
+                    onChange={(e) => setConnectionForm({ ...connectionForm, api_token: e.target.value })}
                     required
+                    autoFocus
                   />
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                    Get your API token from Label Studio: Account & Settings → Access Token
+                  </p>
                 </div>
 
                 {error && (

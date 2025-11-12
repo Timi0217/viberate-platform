@@ -13,14 +13,12 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
 
   const handleFundAccount = async () => {
     try {
-      console.log('Fetching session token for wallet:', walletAddress);
       setIsLoading(true);
       setError(null);
 
       // Fetch session token from backend
       const response = await api.post('/api/wallet/onramp-session-token/', {});
       const sessionToken = response.data.sessionToken;
-      console.log('✅ Session token received');
 
       // Generate onramp URL with session token
       // Note: Your Coinbase project requires sessionToken for security
@@ -31,8 +29,6 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
         addresses: { [walletAddress]: ['base'] },
         assets: ['USDC'],
       });
-
-      console.log('✅ Opening Coinbase Onramp popup');
 
       // Try to open in a popup window first
       const width = 450;
@@ -48,7 +44,6 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
 
       if (!popup || popup.closed || typeof popup.closed === 'undefined') {
         // Popup was blocked, open in new tab as fallback
-        console.log('⚠️ Popup blocked, opening in new tab');
         window.open(onrampURL, '_blank');
         setIsLoading(false);
         // Refresh balance after a delay (since we can't monitor tab close)
@@ -60,7 +55,6 @@ export function CoinbaseOnramp({ walletAddress, onSuccess }: CoinbaseOnrampProps
         const checkPopup = setInterval(() => {
           if (popup.closed) {
             clearInterval(checkPopup);
-            console.log('ℹ️ Coinbase Onramp popup closed');
             setIsLoading(false);
             // Refresh balance when popup closes
             if (onSuccess) {
