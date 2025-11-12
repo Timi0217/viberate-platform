@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from decimal import Decimal
 from .models import Task, TaskAssignment
 from .serializers import (
     TaskSerializer,
@@ -11,7 +12,12 @@ from .serializers import (
     AnnotationSubmitSerializer,
     AssignmentReviewSerializer
 )
+from .payment_service import payment_service
+from .audit_utils import log_task_approved, log_task_rejected
 from integration.labelstudio_client import create_client_for_user
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TaskViewSet(viewsets.ReadOnlyModelViewSet):
@@ -166,39 +172,149 @@ class TaskAssignmentViewSet(viewsets.ModelViewSet):
         return Response(TaskAssignmentSerializer(assignment).data)
 
     @action(detail=True, methods=['post'])
-    def review(self, request, pk=None):
-        """Researcher reviews and approves/rejects the annotation."""
+    def approve(self, request, pk=None):
+        """
+        Approve an assignment and process USDC payment.
+
+        Request body:
+        {
+            "payment_amount": 5.00,  # USDC amount (optional, uses default if not provided)
+            "quality_score": 8.5,    # Quality score 0-10 (optional)
+            "feedback": "Great work!" # Feedback message (optional)
+        }
+        """
         assignment = self.get_object()
 
+        # Permission check
         if assignment.task.project.researcher != request.user:
             return Response(
-                {'error': 'Only the project researcher can review assignments.'},
+                {'error': 'Only the project researcher can approve assignments.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        # Status check
         if assignment.status != 'submitted':
             return Response(
-                {'error': f'Cannot review assignment in status: {assignment.status}'},
+                {'error': f'Cannot approve assignment in status: {assignment.status}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = AssignmentReviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # Get payment amount (default to $5 USDC)
+        payment_amount = request.data.get('payment_amount', 5.00)
+        try:
+            payment_amount = Decimal(str(payment_amount))
+        except:
+            return Response(
+                {'error': 'Invalid payment amount'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        action = serializer.validated_data['action']
-        quality_score = serializer.validated_data.get('quality_score')
-        feedback = serializer.validated_data.get('feedback', '')
+        # Validate payment amount
+        if payment_amount <= 0:
+            return Response(
+                {'error': 'Payment amount must be greater than zero'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if action == 'approve':
-            assignment.approve(quality_score=quality_score, feedback=feedback)
-            # Sync to Label Studio
-            try:
-                self._sync_to_labelstudio(assignment)
-            except Exception as e:
-                # Log error but don't fail the approval
-                pass
-        else:
-            assignment.reject(feedback=feedback)
+        if payment_amount > 10000:
+            return Response(
+                {'error': 'Payment amount cannot exceed $10,000 USDC'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get quality score and feedback
+        quality_score = request.data.get('quality_score')
+        feedback = request.data.get('feedback', '')
+
+        # Approve the assignment
+        assignment.approve(quality_score=quality_score, feedback=feedback)
+
+        # Create payment transaction
+        try:
+            transaction = payment_service.create_payment(
+                assignment=assignment,
+                amount_usdc=payment_amount,
+                approved_by=request.user
+            )
+
+            # Process payment using researcher's wallet
+            # If the researcher has wallet_data, use it; otherwise use PLATFORM_WALLET_DATA from settings
+            payer_wallet_data = request.user.wallet_data if request.user.wallet_data else None
+
+            payment_success = payment_service.process_payment(
+                transaction,
+                request=request,
+                payer_wallet_data=payer_wallet_data
+            )
+
+            if not payment_success:
+                # Payment failed - log warning but don't fail the approval
+                logger.warning(
+                    f"Payment failed for assignment {assignment.id}: {transaction.error_message}"
+                )
+
+        except Exception as e:
+            # Log payment error but don't fail the approval
+            logger.error(f"Failed to process payment for assignment {assignment.id}: {str(e)}")
+            transaction = None
+
+        # Log approval
+        log_task_approved(assignment, request.user, payment_amount, request=request)
+
+        # Sync to Label Studio
+        try:
+            self._sync_to_labelstudio(assignment)
+        except Exception as e:
+            logger.error(f"Failed to sync to Label Studio: {str(e)}")
+
+        # Prepare response
+        response_data = TaskAssignmentSerializer(assignment).data
+
+        # Add payment info to response
+        if transaction:
+            response_data['payment'] = {
+                'transaction_id': transaction.transaction_id,
+                'amount_usdc': str(transaction.amount_usdc),
+                'status': transaction.status,
+                'transaction_hash': transaction.transaction_hash,
+            }
+
+        return Response(response_data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """
+        Reject an assignment.
+
+        Request body:
+        {
+            "reason": "Does not meet quality standards"  # Required
+        }
+        """
+        assignment = self.get_object()
+
+        # Permission check
+        if assignment.task.project.researcher != request.user:
+            return Response(
+                {'error': 'Only the project researcher can reject assignments.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Status check
+        if assignment.status != 'submitted':
+            return Response(
+                {'error': f'Cannot reject assignment in status: {assignment.status}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get rejection reason
+        reason = request.data.get('reason', '')
+
+        # Reject the assignment
+        assignment.reject(feedback=reason)
+
+        # Log rejection
+        log_task_rejected(assignment, request.user, reason, request=request)
 
         return Response(TaskAssignmentSerializer(assignment).data)
 

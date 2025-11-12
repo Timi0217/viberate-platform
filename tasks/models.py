@@ -2,6 +2,9 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
+# Import audit models
+from .audit_models import AuditLog, PaymentTransaction
+
 
 class Task(models.Model):
     """

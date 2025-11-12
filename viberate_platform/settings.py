@@ -172,7 +172,8 @@ AUTH_USER_MODEL = 'users.User'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'users.cookie_auth.CookieJWTAuthentication',  # Cookie-based JWT auth (primary)
+        'rest_framework.authentication.TokenAuthentication',  # Token auth (backward compatibility)
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -193,8 +194,10 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     'http://localhost:3000,http://localhost:8000'
 ).split(',')
 
+# Enable credentials for cookie-based auth
+CORS_ALLOW_CREDENTIALS = True
+
 if not DEBUG:
-    CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOWED_ORIGIN_REGEXES = [
         r"^https://.*\.vercel\.app$",
         r"^https://.*\.railway\.app$",
@@ -222,3 +225,15 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# Payment Service Configuration (Base Network)
+BASE_NETWORK = os.getenv('BASE_NETWORK', 'base-sepolia')  # or 'base-mainnet'
+PLATFORM_WALLET_ADDRESS = os.getenv('PLATFORM_WALLET_ADDRESS', None)
+PLATFORM_WALLET_PRIVATE_KEY = os.getenv('PLATFORM_WALLET_PRIVATE_KEY', None)
+PLATFORM_WALLET_DATA = os.getenv('PLATFORM_WALLET_DATA', None)
+PLATFORM_WALLET_ID = os.getenv('PLATFORM_WALLET_ID', None)
+BASE_RPC_URL = os.getenv('BASE_RPC_URL', 'https://sepolia.base.org')
+
+# Coinbase CDP API keys
+COINBASE_CDP_API_KEY_NAME = os.getenv('COINBASE_CDP_API_KEY_NAME', None)
+COINBASE_CDP_API_KEY_PRIVATE = os.getenv('COINBASE_CDP_API_KEY_PRIVATE', None)

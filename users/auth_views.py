@@ -6,7 +6,9 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .models import User
 from .serializers import UserSerializer, UserCreateSerializer
+from .cookie_auth import set_auth_cookie, clear_auth_cookie
 from wallet.wallet_service import WalletService
+from tasks.audit_utils import log_audit
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    """Login endpoint that returns token and user data."""
+    """Login endpoint that sets httpOnly cookie and returns user data."""
     username = request.data.get('username')
     password = request.data.get('password')
 
@@ -28,24 +30,50 @@ def login_view(request):
     user = authenticate(username=username, password=password)
 
     if not user:
+        # Log failed login attempt
+        log_audit(
+            action_type='auth.login',
+            user=None,
+            details={'username': username, 'success': False},
+            request=request,
+            success=False,
+            error_message='Invalid credentials'
+        )
         return Response(
             {'error': 'Invalid credentials'},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    # Get or create token
-    token, _ = Token.objects.get_or_create(user=user)
+    # Create response with user data
+    response_data = {
+        'user': UserSerializer(user).data,
+        'message': 'Login successful'
+    }
+    response = Response(response_data)
 
-    return Response({
-        'token': token.key,
-        'user': UserSerializer(user).data
-    })
+    # Set httpOnly authentication cookie
+    set_auth_cookie(response, user)
+
+    # Also keep token for backward compatibility with extension
+    token, _ = Token.objects.get_or_create(user=user)
+    response_data['token'] = token.key  # Add token to response for backward compatibility
+
+    # Log successful login
+    log_audit(
+        action_type='auth.login',
+        user=user,
+        details={'username': username},
+        request=request,
+        success=True
+    )
+
+    return response
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    """Register a new user."""
+    """Register a new user and set httpOnly cookie."""
     serializer = UserCreateSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -64,13 +92,33 @@ def register_view(request):
                 logger.error(f"Failed to create wallet for {user.username}: {e}")
                 # Continue registration even if wallet creation fails
 
-        # Create token for new user
-        token, _ = Token.objects.get_or_create(user=user)
+        # Create response with user data
+        response_data = {
+            'user': UserSerializer(user).data,
+            'message': 'Registration successful'
+        }
+        response = Response(response_data, status=status.HTTP_201_CREATED)
 
-        return Response({
-            'token': token.key,
-            'user': UserSerializer(user).data
-        }, status=status.HTTP_201_CREATED)
+        # Set httpOnly authentication cookie
+        set_auth_cookie(response, user)
+
+        # Also create token for backward compatibility with extension
+        token, _ = Token.objects.get_or_create(user=user)
+        response_data['token'] = token.key  # Add token to response for backward compatibility
+
+        # Log registration
+        log_audit(
+            action_type='auth.register',
+            user=user,
+            details={
+                'username': user.username,
+                'user_type': user.user_type
+            },
+            request=request,
+            success=True
+        )
+
+        return response
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,11 +126,30 @@ def register_view(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
-    """Logout endpoint that deletes the user's token."""
+    """Logout endpoint that clears the httpOnly cookie and deletes the token."""
     try:
-        # Delete the user's token
-        request.user.auth_token.delete()
-        return Response({'message': 'Successfully logged out'})
+        # Log logout
+        log_audit(
+            action_type='auth.logout',
+            user=request.user,
+            details={'username': request.user.username},
+            request=request,
+            success=True
+        )
+
+        # Delete the user's token (for backward compatibility)
+        try:
+            request.user.auth_token.delete()
+        except:
+            pass  # Token might not exist
+
+        # Create response
+        response = Response({'message': 'Successfully logged out'})
+
+        # Clear authentication cookie
+        clear_auth_cookie(response)
+
+        return response
     except Exception as e:
         return Response(
             {'error': str(e)},
