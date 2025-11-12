@@ -672,7 +672,14 @@ function App() {
                   </div>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    if (connection?.id) {
+                      try {
+                        await labelStudioAPI.deleteConnection(connection.id);
+                      } catch (err) {
+                        console.error('Failed to delete connection:', err);
+                      }
+                    }
                     setConnection(null);
                     setError('');
                   }}
@@ -804,18 +811,18 @@ function App() {
 
               <form onSubmit={handleCreateConnection} className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">API Token</label>
+                  <label className="form-label">Legacy API Token</label>
                   <input
                     type="password"
                     className="form-input"
-                    placeholder="Enter your Label Studio API token"
+                    placeholder="Enter your Label Studio legacy API token"
                     value={connectionForm.api_token}
                     onChange={(e) => setConnectionForm({ ...connectionForm, api_token: e.target.value })}
                     required
                     autoFocus
                   />
                   <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                    Get your API token from Label Studio: Account & Settings → Access Token
+                    Get your token from Label Studio: Account & Settings → Legacy Token
                   </p>
                 </div>
 

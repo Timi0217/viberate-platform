@@ -120,6 +120,11 @@ export const labelStudioAPI = {
     return response.data;
   },
 
+  deleteConnection: async (id: number) => {
+    const response = await api.delete(`/api/labelstudio/connections/${id}/`);
+    return response.data;
+  },
+
   // Projects
   listProjects: async () => {
     const response = await api.get<LabelStudioProject[]>('/api/labelstudio/projects/');

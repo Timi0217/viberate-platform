@@ -25,7 +25,11 @@ class LabelStudioConnectionViewSet(viewsets.ModelViewSet):
         """
         Create connection and verify it.
         Also stores Label Studio user ID in the User model if available.
+        Automatically replaces any existing connection for this user.
         """
+        # Delete any existing connections for this user
+        LabelStudioConnection.objects.filter(researcher=self.request.user).delete()
+
         connection = serializer.save(
             researcher=self.request.user,
             last_verified_at=timezone.now()
