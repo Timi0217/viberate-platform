@@ -590,13 +590,15 @@ body {
 }
 
 .logout-btn {
-  border-color: #E5E7EB;
-  color: #6B7280;
+  border-color: #FCA5A5;
+  color: #DC2626;
+  background: white;
 }
 
 .logout-btn:hover {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #B91C1C;
 }
 
 /* Main Content */
