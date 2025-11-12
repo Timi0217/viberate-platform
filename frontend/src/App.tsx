@@ -301,7 +301,7 @@ function App() {
                 <span className="no-break">Done right. Done fast.</span>
               </h1>
               <p className="landing-subheadline">
-                From gathering datasets to quality labeling to delivery, we handle the complexity end-to-end and deliver ready-to-train data with unmatched quality.
+                Get affordable consensus-validated data annotations directly in your Label Studio account.
               </p>
               <div className="landing-actions">
                 <button onClick={() => setView('register')} className="btn-landing btn-landing-primary">
