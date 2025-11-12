@@ -455,6 +455,8 @@ body {
   background: #007AFF;
   color: white;
   border-radius: 10px;
+  width: auto;
+  display: inline-block;
 }
 
 .btn-large:hover:not(:disabled) {
@@ -721,6 +723,8 @@ body {
   padding: 80px 32px;
   max-width: 500px;
   margin: 0 auto;
+  display: flex;
+  justify-content: center;
 }
 
 .connection-icon {
