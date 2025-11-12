@@ -297,7 +297,8 @@ function App() {
           <main className="landing-main">
             <div className="landing-content">
               <h1 className="landing-headline">
-                Data annotation for AI researchers. Done right. Done fast.
+                Data annotation for AI researchers.<br />
+                Done right. Done fast.
               </h1>
               <p className="landing-subheadline">
                 From gathering datasets to quality labeling to delivery, we handle the complexity end-to-end and deliver ready-to-train data with unmatched quality.
