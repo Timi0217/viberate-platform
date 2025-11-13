@@ -761,10 +761,9 @@ function App() {
                               className="btn btn-secondary btn-sm"
                               title="Sync tasks from Label Studio"
                             >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '4px' }}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                               </svg>
-                              Sync
                             </button>
                             <button
                               onClick={async () => {
@@ -806,24 +805,18 @@ function App() {
                         </div>
 
                         {/* Budget Section */}
-                        <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Budget</span>
-                            <span style={{ fontSize: '16px', fontWeight: '700', color: '#10B981' }}>
-                              ${parseFloat(project.budget_usdc || '0').toFixed(2)} USDC
-                            </span>
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                            <div>
-                              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Price per Task</div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Remaining</div>
-                              <div style={{ fontSize: '14px', fontWeight: '600' }}>${project.remaining_budget?.toFixed(2) || '0.00'}</div>
+                        <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                          <div style={{ marginBottom: '12px' }}>
+                            <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</div>
+                            <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
+                              ${parseFloat(project.budget_usdc || '0').toFixed(2)}
                             </div>
                           </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ marginBottom: '12px' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Price per Task</div>
+                            <div style={{ fontSize: '15px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
                             <input
                               type="number"
                               step="0.01"
@@ -833,10 +826,11 @@ function App() {
                               defaultValue={parseFloat(project.budget_usdc || '0')}
                               style={{
                                 flex: 1,
-                                padding: '6px 10px',
+                                padding: '8px 12px',
                                 borderRadius: '6px',
                                 border: '1px solid var(--border-color)',
-                                fontSize: '13px'
+                                fontSize: '13px',
+                                backgroundColor: 'var(--bg-primary)'
                               }}
                             />
                             <button
