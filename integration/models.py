@@ -33,6 +33,20 @@ class LabelStudioProject(models.Model):
     total_tasks = models.IntegerField(default=0)
     completed_tasks = models.IntegerField(default=0)
 
+    # Budget and pricing
+    budget_usdc = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        help_text="Total budget allocated for this project in USDC"
+    )
+    price_per_task = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=5.00,
+        help_text="Automatically calculated price per task based on budget"
+    )
+
     # Sync tracking
     last_synced_at = models.DateTimeField(null=True, blank=True)
     sync_enabled = models.BooleanField(
@@ -61,6 +75,30 @@ class LabelStudioProject(models.Model):
             status='completed'
         ).count()
         self.save(update_fields=['total_tasks', 'completed_tasks'])
+
+    def update_pricing(self):
+        """Calculate price per task based on budget and total tasks."""
+        if self.budget_usdc > 0 and self.total_tasks > 0:
+            # Divide budget by total tasks to get price per task
+            self.price_per_task = self.budget_usdc / self.total_tasks
+        elif self.budget_usdc == 0:
+            # No budget set, use default price
+            self.price_per_task = 5.00
+        self.save(update_fields=['price_per_task'])
+
+    @property
+    def completion_percentage(self):
+        """Calculate completion percentage."""
+        if self.total_tasks == 0:
+            return 0
+        return int((self.completed_tasks / self.total_tasks) * 100)
+
+    @property
+    def remaining_budget(self):
+        """Calculate remaining budget (total - spent on completed tasks)."""
+        from decimal import Decimal
+        spent = Decimal(self.completed_tasks) * self.price_per_task
+        return self.budget_usdc - spent
 
 
 class LabelStudioConnection(models.Model):

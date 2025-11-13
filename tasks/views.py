@@ -282,6 +282,33 @@ class TaskAssignmentViewSet(viewsets.ModelViewSet):
         return Response(response_data)
 
     @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """Annotator cancels/unclaims their assignment."""
+        assignment = self.get_object()
+
+        # Permission check - only the annotator can cancel their own assignment
+        if assignment.annotator != request.user:
+            return Response(
+                {'error': 'You can only cancel your own assignments.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Status check - can only cancel if not yet submitted
+        if assignment.status in ['submitted', 'approved', 'rejected']:
+            return Response(
+                {'error': f'Cannot cancel assignment in status: {assignment.status}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Cancel the assignment and make task available again
+        assignment.status = 'cancelled'
+        assignment.task.status = 'available'
+        assignment.task.save(update_fields=['status'])
+        assignment.save(update_fields=['status'])
+
+        return Response({'status': 'cancelled'})
+
+    @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         """
         Reject an assignment.

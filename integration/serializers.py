@@ -7,6 +7,7 @@ class LabelStudioProjectSerializer(serializers.ModelSerializer):
     """Serializer for LabelStudioProject model."""
     researcher_username = serializers.CharField(source='researcher.username', read_only=True)
     completion_percentage = serializers.SerializerMethodField()
+    remaining_budget = serializers.SerializerMethodField()
 
     class Meta:
         model = LabelStudioProject
@@ -15,10 +16,12 @@ class LabelStudioProjectSerializer(serializers.ModelSerializer):
             'researcher', 'researcher_username', 'label_config',
             'is_active', 'total_tasks', 'completed_tasks',
             'completion_percentage', 'sync_enabled', 'last_synced_at',
+            'budget_usdc', 'price_per_task', 'remaining_budget',
             'created_at', 'updated_at'
         ]
         read_only_fields = [
             'id', 'researcher', 'total_tasks', 'completed_tasks',
+            'price_per_task', 'remaining_budget',
             'last_synced_at', 'created_at', 'updated_at'
         ]
 
@@ -26,6 +29,9 @@ class LabelStudioProjectSerializer(serializers.ModelSerializer):
         if obj.total_tasks == 0:
             return 0
         return round((obj.completed_tasks / obj.total_tasks) * 100, 2)
+
+    def get_remaining_budget(self, obj):
+        return float(obj.remaining_budget)
 
 
 class LabelStudioConnectionSerializer(serializers.ModelSerializer):

@@ -620,19 +620,27 @@ function App() {
                     <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px' }}>
                       Payment Amount (USDC):
                     </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      defaultValue="5.00"
-                      id={`payment-${assignment.id}`}
-                      style={{
-                        padding: '8px',
-                        borderRadius: '4px',
-                        border: '1px solid var(--border-color)',
-                        width: '150px'
-                      }}
-                    />
+                    {(() => {
+                      // Get the project's price_per_task for this assignment's task
+                      const task = assignment.task_data || assignment.task;
+                      const project = projects.find(p => p.id === task?.project);
+                      const defaultPrice = project?.price_per_task ? parseFloat(project.price_per_task) : 5.00;
+                      return (
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          defaultValue={defaultPrice.toFixed(2)}
+                          id={`payment-${assignment.id}`}
+                          style={{
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--border-color)',
+                            width: '150px'
+                          }}
+                        />
+                      );
+                    })()}
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
@@ -747,12 +755,37 @@ function App() {
                             <h4 className="project-title">{project.title}</h4>
                             <p className="project-description">{project.description}</p>
                           </div>
-                          <button
-                            onClick={() => handleSyncProject(project.id)}
-                            className="btn btn-secondary btn-sm"
-                          >
-                            🔄 Sync
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => handleSyncProject(project.id)}
+                              className="btn btn-secondary btn-sm"
+                              title="Sync tasks from Label Studio"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '4px' }}>
+                                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                              </svg>
+                              Sync
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (confirm(`Are you sure you want to remove "${project.title}"? This will delete the project from Viberate but NOT from Label Studio.`)) {
+                                  try {
+                                    await labelStudioAPI.deleteProject(project.id);
+                                    await loadProjects();
+                                  } catch (err: any) {
+                                    setError(err.response?.data?.error || 'Failed to delete project');
+                                  }
+                                }
+                              }}
+                              className="btn btn-outline btn-sm"
+                              title="Remove project from Viberate"
+                              style={{ color: '#EF4444', borderColor: '#EF4444' }}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                         <div className="project-stats">
                           <div className="stat-item">
@@ -770,6 +803,59 @@ function App() {
                         </div>
                         <div className="progress-bar">
                           <div className="progress-fill" style={{ width: `${project.completion_percentage}%` }}></div>
+                        </div>
+
+                        {/* Budget Section */}
+                        <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Budget</span>
+                            <span style={{ fontSize: '16px', fontWeight: '700', color: '#10B981' }}>
+                              ${parseFloat(project.budget_usdc || '0').toFixed(2)} USDC
+                            </span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                            <div>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Price per Task</div>
+                              <div style={{ fontSize: '14px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Remaining</div>
+                              <div style={{ fontSize: '14px', fontWeight: '600' }}>${project.remaining_budget?.toFixed(2) || '0.00'}</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="Set budget"
+                              id={`budget-${project.id}`}
+                              defaultValue={parseFloat(project.budget_usdc || '0')}
+                              style={{
+                                flex: 1,
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border-color)',
+                                fontSize: '13px'
+                              }}
+                            />
+                            <button
+                              onClick={async () => {
+                                const input = document.getElementById(`budget-${project.id}`) as HTMLInputElement;
+                                const budget = parseFloat(input.value || '0');
+                                try {
+                                  await labelStudioAPI.updateBudget(project.id, budget);
+                                  await loadProjects();
+                                } catch (err: any) {
+                                  setError(err.response?.data?.error || 'Failed to update budget');
+                                }
+                              }}
+                              className="btn btn-primary btn-sm"
+                              style={{ whiteSpace: 'nowrap' }}
+                            >
+                              Update
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}

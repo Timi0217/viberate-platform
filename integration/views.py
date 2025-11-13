@@ -157,6 +157,7 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
 
         project.last_synced_at = timezone.now()
         project.update_task_counts()
+        project.update_pricing()  # Recalculate price per task based on new task count
 
         return {
             'tasks_imported': tasks_imported,

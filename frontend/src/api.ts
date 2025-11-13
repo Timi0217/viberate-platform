@@ -50,6 +50,9 @@ export interface LabelStudioProject {
   total_tasks: number;
   completed_tasks: number;
   completion_percentage: number;
+  budget_usdc: string;
+  price_per_task: string;
+  remaining_budget: number;
   last_synced_at: string;
   created_at: string;
 }
@@ -145,6 +148,18 @@ export const labelStudioAPI = {
 
   syncProject: async (id: number) => {
     const response = await api.post(`/api/labelstudio/projects/${id}/sync/`);
+    return response.data;
+  },
+
+  updateBudget: async (id: number, budgetUsdc: number) => {
+    const response = await api.patch(`/api/labelstudio/projects/${id}/`, {
+      budget_usdc: budgetUsdc
+    });
+    return response.data;
+  },
+
+  deleteProject: async (id: number) => {
+    const response = await api.delete(`/api/labelstudio/projects/${id}/`);
     return response.data;
   },
 };
