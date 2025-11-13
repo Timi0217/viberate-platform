@@ -838,7 +838,7 @@ function App() {
                         </div>
 
                         {/* Budget Section */}
-                        <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                        <div style={{ marginTop: '16px', padding: '16px 24px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px', marginLeft: '-24px', marginRight: '-24px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</span>
