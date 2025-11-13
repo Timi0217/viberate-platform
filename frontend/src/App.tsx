@@ -806,50 +806,59 @@ function App() {
 
                         {/* Budget Section */}
                         <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
                               <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</div>
-                              <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
-                                ${parseFloat(project.budget_usdc || '0').toFixed(2)}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
+                                  ${parseFloat(project.budget_usdc || '0').toFixed(2)}
+                                </div>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="0.00"
+                                  id={`budget-${project.id}`}
+                                  defaultValue={parseFloat(project.budget_usdc || '0')}
+                                  style={{
+                                    width: '90px',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--border-color)',
+                                    fontSize: '13px',
+                                    backgroundColor: 'var(--bg-primary)'
+                                  }}
+                                />
+                                <button
+                                  onClick={async () => {
+                                    const input = document.getElementById(`budget-${project.id}`) as HTMLInputElement;
+                                    const budget = parseFloat(input.value || '0');
+                                    try {
+                                      await labelStudioAPI.updateBudget(project.id, budget);
+                                      await loadProjects();
+                                    } catch (err: any) {
+                                      setError(err.response?.data?.error || 'Failed to update budget');
+                                    }
+                                  }}
+                                  style={{
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    border: 'none',
+                                    backgroundColor: '#3B82F6',
+                                    color: 'white',
+                                    fontSize: '12px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Set
+                                </button>
                               </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Price per Task</div>
                               <div style={{ fontSize: '15px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
                             </div>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="0.00"
-                              id={`budget-${project.id}`}
-                              defaultValue={parseFloat(project.budget_usdc || '0')}
-                              style={{
-                                width: '120px',
-                                padding: '8px 12px',
-                                borderRadius: '6px',
-                                border: '1px solid var(--border-color)',
-                                fontSize: '13px',
-                                backgroundColor: 'var(--bg-primary)'
-                              }}
-                            />
-                            <button
-                              onClick={async () => {
-                                const input = document.getElementById(`budget-${project.id}`) as HTMLInputElement;
-                                const budget = parseFloat(input.value || '0');
-                                try {
-                                  await labelStudioAPI.updateBudget(project.id, budget);
-                                  await loadProjects();
-                                } catch (err: any) {
-                                  setError(err.response?.data?.error || 'Failed to update budget');
-                                }
-                              }}
-                              className="btn btn-primary btn-sm"
-                            >
-                              Update
-                            </button>
                           </div>
                         </div>
                       </div>
