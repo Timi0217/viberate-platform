@@ -160,8 +160,18 @@ function App() {
       const data = await labelStudioAPI.getConnection();
       console.log('Load connection response:', data);
 
+      // Check if data is a paginated response with results
+      if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+        if (data.results.length > 0 && data.results[0].id && data.results[0].labelstudio_url) {
+          console.log('Setting connection from paginated results:', data.results[0]);
+          setConnection(data.results[0]);
+        } else {
+          console.log('Empty paginated results');
+          setConnection(null);
+        }
+      }
       // Check if data is an array with connections
-      if (Array.isArray(data)) {
+      else if (Array.isArray(data)) {
         if (data.length > 0 && data[0].id && data[0].labelstudio_url) {
           console.log('Setting connection from array:', data[0]);
           setConnection(data[0]);
@@ -206,7 +216,13 @@ function App() {
     try {
       const data = await labelStudioAPI.listProjects();
       console.log('Load projects response:', data);
-      setProjects(Array.isArray(data) ? data : []);
+
+      // Handle paginated response
+      if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+        setProjects(data.results);
+      } else {
+        setProjects(Array.isArray(data) ? data : []);
+      }
     } catch (err) {
       console.error('Load projects error:', err);
       setProjects([]);
