@@ -806,26 +806,28 @@ function App() {
 
                         {/* Budget Section */}
                         <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                          <div style={{ marginBottom: '12px' }}>
-                            <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</div>
-                            <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
-                              ${parseFloat(project.budget_usdc || '0').toFixed(2)}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                            <div>
+                              <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</div>
+                              <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
+                                ${parseFloat(project.budget_usdc || '0').toFixed(2)}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Price per Task</div>
+                              <div style={{ fontSize: '15px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
                             </div>
                           </div>
-                          <div style={{ marginBottom: '12px' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Price per Task</div>
-                            <div style={{ fontSize: '15px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
-                          </div>
-                          <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
                             <input
                               type="number"
                               step="0.01"
                               min="0"
-                              placeholder="Set budget"
+                              placeholder="0.00"
                               id={`budget-${project.id}`}
                               defaultValue={parseFloat(project.budget_usdc || '0')}
                               style={{
-                                flex: 1,
+                                width: '120px',
                                 padding: '8px 12px',
                                 borderRadius: '6px',
                                 border: '1px solid var(--border-color)',
@@ -845,7 +847,6 @@ function App() {
                                 }
                               }}
                               className="btn btn-primary btn-sm"
-                              style={{ whiteSpace: 'nowrap' }}
                             >
                               Update
                             </button>
