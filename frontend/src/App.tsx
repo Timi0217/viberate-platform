@@ -395,6 +395,33 @@ function App() {
     return (
       <div className="auth-container">
         <div className="auth-card">
+          <button
+            onClick={() => setView('landing')}
+            style={{
+              position: 'absolute',
+              top: '24px',
+              left: '24px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#86868B',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#1D1D1F'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#86868B'}
+            title="Back to home"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
           <div className="auth-logo">
             <svg width="48" height="48" viewBox="0 0 32 32" fill="none" style={{ margin: '0 auto 16px' }}>
               <path d="M6 16h4M12 12v8M16 8v16M20 12v8M26 16h-4" stroke="#1D1D1F" strokeWidth="2.5" strokeLinecap="round"/>
