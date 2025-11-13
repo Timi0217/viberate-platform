@@ -839,7 +839,7 @@ function App() {
 
                         {/* Budget Section */}
                         <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</span>
                               <span style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
@@ -890,7 +890,7 @@ function App() {
                                 </button>
                               </div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
                               <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price per Task</span>
                               <span style={{ fontSize: '20px', fontWeight: '700' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</span>
                             </div>
