@@ -79,6 +79,14 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
         # Annotators see all active projects
         return LabelStudioProject.objects.filter(is_active=True)
 
+    def perform_update(self, serializer):
+        """Override to recalculate pricing when budget is updated."""
+        project = serializer.save()
+        # If budget was updated, recalculate price per task
+        if 'budget_usdc' in serializer.validated_data:
+            project.update_pricing()
+        return project
+
     @action(detail=False, methods=['post'])
     def import_project(self, request):
         """Import a project from Label Studio."""
