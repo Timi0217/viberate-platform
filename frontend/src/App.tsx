@@ -809,55 +809,52 @@ function App() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
                               <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
-                                  ${parseFloat(project.budget_usdc || '0').toFixed(2)}
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>Set:</span>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    placeholder="Enter amount"
-                                    id={`budget-${project.id}`}
-                                    defaultValue={parseFloat(project.budget_usdc || '0')}
-                                    title="Set new budget amount in USDC"
-                                    style={{
-                                      width: '90px',
-                                      padding: '4px 8px',
-                                      borderRadius: '4px',
-                                      border: '1px solid var(--border-color)',
-                                      fontSize: '13px',
-                                      backgroundColor: 'var(--bg-primary)'
-                                    }}
-                                  />
-                                  <button
-                                    onClick={async () => {
-                                      const input = document.getElementById(`budget-${project.id}`) as HTMLInputElement;
-                                      const budget = parseFloat(input.value || '0');
-                                      try {
-                                        await labelStudioAPI.updateBudget(project.id, budget);
-                                        await loadProjects();
-                                      } catch (err: any) {
-                                        setError(err.response?.data?.error || 'Failed to update budget');
-                                      }
-                                    }}
-                                    style={{
-                                      padding: '4px 12px',
-                                      borderRadius: '4px',
-                                      border: 'none',
-                                      backgroundColor: '#3B82F6',
-                                      color: 'white',
-                                      fontSize: '12px',
-                                      fontWeight: '500',
-                                      cursor: 'pointer'
-                                    }}
-                                    title="Update budget"
-                                  >
-                                    Set
-                                  </button>
-                                </div>
+                              <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981', marginBottom: '8px' }}>
+                                ${parseFloat(project.budget_usdc || '0').toFixed(2)}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="Enter amount"
+                                  id={`budget-${project.id}`}
+                                  defaultValue={parseFloat(project.budget_usdc || '0')}
+                                  title="Set new budget amount in USDC"
+                                  style={{
+                                    width: '100px',
+                                    padding: '6px 10px',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--border-color)',
+                                    fontSize: '13px',
+                                    backgroundColor: 'var(--bg-primary)'
+                                  }}
+                                />
+                                <button
+                                  onClick={async () => {
+                                    const input = document.getElementById(`budget-${project.id}`) as HTMLInputElement;
+                                    const budget = parseFloat(input.value || '0');
+                                    try {
+                                      await labelStudioAPI.updateBudget(project.id, budget);
+                                      await loadProjects();
+                                    } catch (err: any) {
+                                      setError(err.response?.data?.error || 'Failed to update budget');
+                                    }
+                                  }}
+                                  style={{
+                                    padding: '6px 16px',
+                                    borderRadius: '4px',
+                                    border: 'none',
+                                    backgroundColor: '#3B82F6',
+                                    color: 'white',
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Update budget"
+                                >
+                                  Set
+                                </button>
                               </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
