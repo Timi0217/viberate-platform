@@ -806,13 +806,13 @@ function App() {
 
                         {/* Budget Section */}
                         <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div>
-                              <div style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</div>
-                              <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Budget</span>
+                              <span style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
                                 ${parseFloat(project.budget_usdc || '0').toFixed(2)}
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                                 <input
                                   type="number"
                                   step="0.01"
@@ -824,7 +824,7 @@ function App() {
                                   style={{
                                     width: '100px',
                                     padding: '6px 10px',
-                                    borderRadius: '4px',
+                                    borderRadius: '8px',
                                     border: '1px solid var(--border-color)',
                                     fontSize: '13px',
                                     backgroundColor: 'var(--bg-primary)'
@@ -843,7 +843,7 @@ function App() {
                                   }}
                                   style={{
                                     padding: '6px 16px',
-                                    borderRadius: '4px',
+                                    borderRadius: '8px',
                                     border: 'none',
                                     backgroundColor: '#3B82F6',
                                     color: 'white',
@@ -857,9 +857,9 @@ function App() {
                                 </button>
                               </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>Price per Task</div>
-                              <div style={{ fontSize: '15px', fontWeight: '600' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price per Task</span>
+                              <span style={{ fontSize: '20px', fontWeight: '700' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
