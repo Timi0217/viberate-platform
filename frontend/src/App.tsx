@@ -461,13 +461,16 @@ function App() {
                 />
               </div>
               {error && <div className="error-message">⚠️ {error}</div>}
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary"
-              >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary"
+                  style={{ minWidth: '200px' }}
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </div>
               <div className="auth-switch">
                 Don't have an account?{' '}
                 <a className="auth-link" onClick={() => { setView('register'); setError(''); }}>
@@ -522,13 +525,16 @@ function App() {
                 />
               </div>
               {error && <div className="error-message">⚠️ {error}</div>}
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-success"
-              >
-                {loading ? 'Creating Account...' : 'Create Account'}
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-success"
+                  style={{ minWidth: '200px' }}
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </button>
+              </div>
               <div className="auth-switch">
                 Already have an account?{' '}
                 <a className="auth-link" onClick={() => { setView('login'); setError(''); }}>
