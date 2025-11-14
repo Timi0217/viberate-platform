@@ -142,7 +142,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
                 <title>Viberate Annotator</title>
                 <style>
                     * {
@@ -528,9 +528,32 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     }
 
                     function renderTaskCard(task) {
-                        const taskDataJson = escapeHtml(JSON.stringify(task.data, null, 2));
+                        const taskData = task.data || {};
                         const pricePerTask = task.price_per_task ? parseFloat(task.price_per_task).toFixed(2) : '0.00';
                         const projectTitle = task.project_title || 'Unknown Project';
+
+                        // Extract and display media (images/videos)
+                        let mediaHtml = '';
+                        const imageUrl = taskData.image || taskData.img || taskData.url || taskData.image_url;
+                        if (imageUrl) {
+                            mediaHtml = \`
+                                <div style="margin: 12px 0;">
+                                    <img src="\${escapeHtml(imageUrl)}" style="max-width: 100%; border-radius: 4px; border: 1px solid var(--vscode-input-border);" alt="Task image" />
+                                </div>
+                            \`;
+                        }
+
+                        // Extract text content
+                        let textContent = '';
+                        const text = taskData.text || taskData.mt || taskData.source || taskData.content;
+                        if (text) {
+                            textContent = \`
+                                <div style="margin: 12px 0; padding: 12px; background-color: var(--vscode-editor-inactiveSelectionBackground); border-radius: 4px; border-left: 3px solid #2ea043;">
+                                    <div style="font-size: 11px; font-weight: 600; color: var(--vscode-descriptionForeground); margin-bottom: 6px;">TEXT TO ANNOTATE:</div>
+                                    <div style="font-size: 13px; line-height: 1.5;">\${escapeHtml(text)}</div>
+                                </div>
+                            \`;
+                        }
 
                         return \`
                             <div class="task-card">
@@ -542,7 +565,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     <span class="badge available">Available</span>
                                     <span style="font-size: 13px; font-weight: 600; color: #2ea043;">$\${pricePerTask} USDC</span>
                                 </div>
-                                <div class="task-data">\${taskDataJson}</div>
+                                \${mediaHtml}
+                                \${textContent}
                                 <button data-action="claim-task" data-task-id="\${task.id}">Claim Task</button>
                             </div>
                         \`;
@@ -551,7 +575,18 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     function renderAssignmentCard(assignment) {
                         const task = assignment.task_data || assignment.task || {};
                         const status = assignment.status;
-                        const taskDataJson = escapeHtml(JSON.stringify(task.data || {}, null, 2));
+                        const taskData = task.data || {};
+
+                        // Extract and display media (images/videos)
+                        let mediaHtml = '';
+                        const imageUrl = taskData.image || taskData.img || taskData.url || taskData.image_url;
+                        if (imageUrl) {
+                            mediaHtml = \`
+                                <div style="margin: 12px 0;">
+                                    <img src="\${escapeHtml(imageUrl)}" style="max-width: 100%; border-radius: 4px; border: 1px solid var(--vscode-input-border);" alt="Task image" />
+                                </div>
+                            \`;
+                        }
 
                         let actionButton = '';
                         let annotationForm = '';
@@ -586,7 +621,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     <span class="badge \${status}">\${escapeHtml(status)}</span>
                                     <span style="font-size: 13px; font-weight: 600; color: #2ea043;">$\${pricePerTask} USDC</span>
                                 </div>
-                                <div class="task-data">\${taskDataJson}</div>
+                                \${mediaHtml}
                                 \${annotationForm}
                                 \${actionButton}
                                 \${cancelButton}
