@@ -398,19 +398,32 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                         // Event delegation for task and assignment actions
                         app.addEventListener('click', (e) => {
-                            const target = e.target;
-                            if (target.dataset.action === 'claim-task') {
-                                claimTask(parseInt(target.dataset.taskId));
-                            } else if (target.dataset.action === 'start-assignment') {
-                                startAssignment(parseInt(target.dataset.assignmentId));
-                            } else if (target.dataset.action === 'submit-assignment') {
-                                submitAssignment(parseInt(target.dataset.assignmentId));
-                            } else if (target.dataset.action === 'submit-simple-annotation') {
-                                submitSimpleAnnotation(parseInt(target.dataset.assignmentId));
-                            } else if (target.dataset.action === 'cancel-assignment') {
-                                cancelAssignment(parseInt(target.dataset.assignmentId));
-                            } else if (target.dataset.action === 'validate-json') {
-                                validateJSON(parseInt(target.dataset.assignmentId));
+                            let target = e.target;
+                            // Walk up the DOM tree to find the button with data-action
+                            while (target && target !== app) {
+                                if (target.dataset && target.dataset.action) {
+                                    const action = target.dataset.action;
+                                    if (action === 'claim-task') {
+                                        claimTask(parseInt(target.dataset.taskId));
+                                        return;
+                                    } else if (action === 'start-assignment') {
+                                        startAssignment(parseInt(target.dataset.assignmentId));
+                                        return;
+                                    } else if (action === 'submit-assignment') {
+                                        submitAssignment(parseInt(target.dataset.assignmentId));
+                                        return;
+                                    } else if (action === 'submit-simple-annotation') {
+                                        submitSimpleAnnotation(parseInt(target.dataset.assignmentId));
+                                        return;
+                                    } else if (action === 'cancel-assignment') {
+                                        cancelAssignment(parseInt(target.dataset.assignmentId));
+                                        return;
+                                    } else if (action === 'validate-json') {
+                                        validateJSON(parseInt(target.dataset.assignmentId));
+                                        return;
+                                    }
+                                }
+                                target = target.parentElement;
                             }
                         });
                     }
