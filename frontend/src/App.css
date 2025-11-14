@@ -718,6 +718,24 @@ body {
   border: 1px solid #EF444444;
 }
 
+.alert-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #991B1B;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.alert-close-btn:hover {
+  background-color: rgba(153, 27, 27, 0.1);
+}
+
 /* Connection Empty State */
 .connection-empty-state {
   text-align: center;
