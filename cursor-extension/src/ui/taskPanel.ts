@@ -96,31 +96,17 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
     private async handleClaimTask(taskId: number) {
         try {
-            // Claim the task
+            // Claim the task (backend automatically starts it)
             const assignment = await this.taskManager.claimTask(taskId);
 
             if (!assignment || !assignment.id) {
                 throw new Error('Assignment was not created properly');
             }
 
-            // Refresh first to show the assignment
+            // Refresh to show the assignment with annotation form
             await this.refresh();
 
-            // Add a small delay to ensure backend state is consistent
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // Try to automatically start the assignment
-            try {
-                await this.taskManager.startAssignment(assignment.id);
-                vscode.window.showInformationMessage('Task claimed and started! Complete the annotation below.');
-            } catch (startError: any) {
-                // If auto-start fails, that's okay - user can manually start
-                console.error('Auto-start failed:', startError);
-                vscode.window.showInformationMessage('Task claimed! Click "Start Task" to begin annotation.');
-            }
-
-            // Refresh again to show the updated state
-            await this.refresh();
+            vscode.window.showInformationMessage('✅ Task claimed! Complete the annotation form below. You can cancel anytime.');
         } catch (error: any) {
             // Handle common errors with better messages
             if (error.response?.status === 400) {
@@ -487,13 +473,18 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                         // My assignments section
                         if (myAssignments && myAssignments.length > 0) {
-                            html += '<h2>My Assignments</h2>';
+                            html += \`
+                                <div style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                                    <h2 style="margin: 0 0 12px 0;">📋 My Assignments (\${myAssignments.length})</h2>
+                            \`;
                             myAssignments.forEach(assignment => {
                                 html += renderAssignmentCard(assignment);
                             });
+                            html += '</div>';
                         }
 
                         // Available tasks section
+                        html += '<div class="section-divider"></div>';
                         html += '<h2>Available Tasks</h2>';
                         if (availableTasks && availableTasks.length > 0) {
                             availableTasks.forEach(task => {
@@ -629,9 +620,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             cancelButton = \`<button data-action="cancel-assignment" data-assignment-id="\${assignment.id}" class="secondary" style="margin-top: 8px;">Cancel Assignment</button>\`;
                         }
 
-                        if (status === 'assigned' || status === 'accepted') {
-                            actionButton = \`<button data-action="start-assignment" data-assignment-id="\${assignment.id}">Start Task</button>\`;
-                        } else if (status === 'in_progress') {
+                        if (status === 'assigned' || status === 'accepted' || status === 'in_progress') {
+                            // All newly claimed tasks are automatically started (in_progress status)
                             annotationForm = renderAnnotationForm(assignment);
                         } else if (status === 'submitted') {
                             actionButton = '<p style="color: #bf8700;">⏳ Waiting for researcher approval...</p>';
