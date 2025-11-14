@@ -43,6 +43,17 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [pendingAssignments, setPendingAssignments] = useState<any[]>([]);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     checkAuth();
@@ -803,15 +814,22 @@ function App() {
                               </svg>
                             </button>
                             <button
-                              onClick={async () => {
-                                if (confirm(`Are you sure you want to remove "${project.title}"? This will delete the project from Viberate but NOT from Label Studio.`)) {
-                                  try {
-                                    await labelStudioAPI.deleteProject(project.id);
-                                    await loadProjects();
-                                  } catch (err: any) {
-                                    setError(err.response?.data?.error || 'Failed to delete project');
-                                  }
-                                }
+                              onClick={() => {
+                                setConfirmDialog({
+                                  show: true,
+                                  title: `Remove "${project.title}"`,
+                                  message: 'This will delete the project from Viberate but NOT from Label Studio.',
+                                  onConfirm: async () => {
+                                    try {
+                                      await labelStudioAPI.deleteProject(project.id);
+                                      await loadProjects();
+                                      setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} });
+                                    } catch (err: any) {
+                                      setError(err.response?.data?.error || 'Failed to delete project');
+                                      setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} });
+                                    }
+                                  },
+                                });
                               }}
                               className="btn btn-sm"
                               title="Remove project from Viberate"
@@ -1023,6 +1041,38 @@ function App() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Confirmation Dialog */}
+        {confirmDialog.show && (
+          <div className="modal-overlay" onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} })}>
+            <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="confirm-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="#EF4444" strokeWidth="2"/>
+                  <path d="M12 8v4M12 16h.01" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <h3 className="confirm-title">{confirmDialog.title}</h3>
+              <p className="confirm-message">{confirmDialog.message}</p>
+              <div className="confirm-actions">
+                <button
+                  onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} })}
+                  className="btn btn-outline"
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDialog.onConfirm}
+                  className="btn"
+                  style={{ flex: 1, backgroundColor: '#EF4444', color: 'white', border: 'none' }}
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           </div>
         )}
