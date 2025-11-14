@@ -145,56 +145,84 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
                 <title>Viberate Annotator</title>
                 <style>
+                    * {
+                        box-sizing: border-box;
+                    }
                     body {
-                        padding: 10px;
+                        padding: 12px;
                         color: var(--vscode-foreground);
                         font-size: var(--vscode-font-size);
                         font-family: var(--vscode-font-family);
+                        margin: 0;
                     }
                     .container {
-                        margin-bottom: 20px;
+                        margin-bottom: 16px;
                     }
                     button {
                         background-color: var(--vscode-button-background);
                         color: var(--vscode-button-foreground);
                         border: none;
-                        padding: 8px 16px;
+                        padding: 10px 16px;
                         cursor: pointer;
-                        border-radius: 2px;
+                        border-radius: 6px;
                         font-size: 13px;
+                        font-weight: 500;
                         width: 100%;
                         margin-bottom: 8px;
+                        transition: all 0.15s ease;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
                     }
-                    button:hover {
+                    button:hover:not(:disabled) {
                         background-color: var(--vscode-button-hoverBackground);
+                        transform: translateY(-1px);
+                    }
+                    button:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
                     }
                     button.secondary {
                         background-color: var(--vscode-button-secondaryBackground);
                         color: var(--vscode-button-secondaryForeground);
                     }
-                    button.secondary:hover {
+                    button.secondary:hover:not(:disabled) {
                         background-color: var(--vscode-button-secondaryHoverBackground);
                     }
                     .task-card {
                         border: 1px solid var(--vscode-panel-border);
-                        padding: 12px;
+                        padding: 14px;
                         margin-bottom: 12px;
-                        border-radius: 4px;
+                        border-radius: 8px;
                         background-color: var(--vscode-editor-background);
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        transition: all 0.2s ease;
+                    }
+                    .task-card:hover {
+                        border-color: var(--vscode-focusBorder);
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                     }
                     .task-card h3 {
-                        margin: 0 0 8px 0;
+                        margin: 0 0 10px 0;
                         font-size: 14px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
                     }
                     .task-card p {
-                        margin: 4px 0;
+                        margin: 6px 0;
                         font-size: 12px;
                         color: var(--vscode-descriptionForeground);
+                        line-height: 1.4;
                     }
                     .badge {
-                        display: inline-block;
-                        padding: 2px 8px;
-                        border-radius: 10px;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 4px;
+                        padding: 4px 10px;
+                        border-radius: 12px;
                         font-size: 11px;
                         font-weight: 600;
                         margin: 4px 0;
@@ -205,58 +233,110 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     .badge.approved { background-color: #8250df; color: white; }
                     .empty-state {
                         text-align: center;
-                        padding: 40px 20px;
+                        padding: 48px 20px;
+                        color: var(--vscode-descriptionForeground);
+                    }
+                    .empty-state-icon {
+                        font-size: 48px;
+                        margin-bottom: 12px;
+                        opacity: 0.6;
+                    }
+                    .empty-state h3 {
+                        font-size: 15px;
+                        font-weight: 600;
+                        margin: 0 0 6px 0;
+                        color: var(--vscode-foreground);
+                    }
+                    .empty-state p {
+                        font-size: 13px;
+                        margin: 0;
                         color: var(--vscode-descriptionForeground);
                     }
                     .annotation-form {
-                        margin-top: 12px;
+                        margin-top: 14px;
+                        background-color: var(--vscode-editor-inactiveSelectionBackground);
+                        padding: 12px;
+                        border-radius: 6px;
                     }
                     .annotation-form textarea,
                     .annotation-form input,
                     .annotation-form select {
                         width: 100%;
-                        margin-bottom: 8px;
-                        padding: 6px;
+                        margin-bottom: 10px;
+                        padding: 8px 10px;
                         background-color: var(--vscode-input-background);
                         color: var(--vscode-input-foreground);
                         border: 1px solid var(--vscode-input-border);
+                        border-radius: 4px;
                         font-family: var(--vscode-font-family);
+                        font-size: 13px;
+                    }
+                    .annotation-form textarea:focus,
+                    .annotation-form input:focus,
+                    .annotation-form select:focus {
+                        outline: 1px solid var(--vscode-focusBorder);
+                        border-color: var(--vscode-focusBorder);
                     }
                     .balance {
+                        background: linear-gradient(135deg, rgba(46, 160, 67, 0.15) 0%, rgba(46, 160, 67, 0.05) 100%);
+                        border: 1px solid rgba(46, 160, 67, 0.3);
+                        padding: 16px;
+                        margin-bottom: 16px;
+                        border-radius: 8px;
                         text-align: center;
-                        padding: 12px;
-                        margin-bottom: 12px;
-                        background-color: var(--vscode-editor-inactiveSelectionBackground);
-                        border-radius: 4px;
+                    }
+                    .balance-label {
+                        font-size: 11px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        color: var(--vscode-descriptionForeground);
+                        margin-bottom: 6px;
                     }
                     .balance-amount {
-                        font-size: 24px;
-                        font-weight: bold;
+                        font-size: 28px;
+                        font-weight: 700;
                         color: #2ea043;
+                        letter-spacing: -0.5px;
                     }
                     .task-data {
                         background-color: var(--vscode-textCodeBlock-background);
-                        padding: 8px;
-                        margin: 8px 0;
-                        border-radius: 4px;
-                        font-family: monospace;
-                        font-size: 12px;
+                        padding: 10px;
+                        margin: 10px 0;
+                        border-radius: 6px;
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        font-size: 11px;
                         max-height: 200px;
                         overflow-y: auto;
+                        border: 1px solid var(--vscode-panel-border);
+                    }
+                    .task-data::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    .task-data::-webkit-scrollbar-thumb {
+                        background-color: var(--vscode-scrollbarSlider-background);
+                        border-radius: 4px;
                     }
                     h2 {
-                        font-size: 16px;
-                        margin: 16px 0 8px 0;
-                        color: var(--vscode-foreground);
-                    }
-                    .app-header {
-                        text-align: center;
-                        font-size: 18px;
+                        font-size: 15px;
                         font-weight: 600;
-                        letter-spacing: 0.5px;
-                        margin: 0 0 20px 0;
-                        padding: 12px 0;
+                        margin: 20px 0 12px 0;
                         color: var(--vscode-foreground);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    h2::before {
+                        content: '';
+                        width: 3px;
+                        height: 16px;
+                        background-color: var(--vscode-focusBorder);
+                        border-radius: 2px;
+                    }
+                    .section-divider {
+                        height: 1px;
+                        background-color: var(--vscode-panel-border);
+                        margin: 16px 0;
                     }
                 </style>
             </head>
@@ -316,8 +396,10 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             app.innerHTML = \`
                                 <div class="container">
                                     <div class="empty-state">
-                                        <h3 style="font-size: 18px; line-height: 1.4; font-weight: 500;">Earn USDC while waiting for your prompts to run</h3>
-                                        <button id="login-btn" style="margin-top: 24px;">Login</button>
+                                        <div class="empty-state-icon">💰</div>
+                                        <h3>Earn USDC While You Code</h3>
+                                        <p style="margin: 8px 0 24px;">Complete annotation tasks and get paid in cryptocurrency while waiting for your prompts to run</p>
+                                        <button id="login-btn">Login</button>
                                         <button id="register-btn" class="secondary">Create Account</button>
                                     </div>
                                 </div>
@@ -351,12 +433,23 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         let html = \`
                             <div class="container">
                                 <div class="balance">
-                                    <div>Your Balance</div>
-                                    <div class="balance-amount">$\${parseFloat(user.usdc_balance || '0').toFixed(2)} USDC</div>
+                                    <div class="balance-label">💰 YOUR EARNINGS</div>
+                                    <div class="balance-amount">$\${parseFloat(user.usdc_balance || '0').toFixed(2)}</div>
+                                    <div style="font-size: 12px; color: var(--vscode-descriptionForeground); margin-top: 4px;">USDC on Base</div>
                                 </div>
                                 \${walletSection}
-                                <button id="refresh-btn" class="secondary">Refresh Tasks</button>
-                                <button id="logout-btn" class="secondary" style="margin-top: 8px; border-color: #FCA5A5; color: #DC2626;">Logout</button>
+                                <button id="refresh-btn" class="secondary">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                    </svg>
+                                    Refresh Tasks
+                                </button>
+                                <button id="logout-btn" class="secondary" style="margin-top: 0;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                                    </svg>
+                                    Logout
+                                </button>
                             </div>
                         \`;
 
@@ -375,7 +468,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 html += renderTaskCard(task);
                             });
                         } else {
-                            html += '<div class="empty-state"><p>No tasks available at the moment.<br/>Check back later!</p></div>';
+                            html += \`
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📋</div>
+                                    <h3>No Tasks Available</h3>
+                                    <p>Check back later for new annotation tasks!</p>
+                                </div>
+                            \`;
                         }
 
                         app.innerHTML = html;
