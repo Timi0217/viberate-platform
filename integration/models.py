@@ -30,6 +30,10 @@ class LabelStudioProject(models.Model):
         default=True,
         help_text="Whether tasks from this project should be available to annotators"
     )
+    is_published = models.BooleanField(
+        default=False,
+        help_text="Whether this project is published and available for annotators. Requires budget > 0"
+    )
     total_tasks = models.IntegerField(default=0)
     completed_tasks = models.IntegerField(default=0)
 
@@ -85,6 +89,29 @@ class LabelStudioProject(models.Model):
             # No budget set, price per task is 0
             self.price_per_task = 0.00
         self.save(update_fields=['price_per_task'])
+
+    def publish(self):
+        """
+        Publish the project to make it available for annotators.
+        Validates that budget > 0 before publishing.
+        """
+        if self.budget_usdc <= 0:
+            raise ValueError("Cannot publish project with budget of $0. Please set a budget first.")
+
+        self.is_published = True
+        self.save(update_fields=['is_published'])
+        return True
+
+    def unpublish(self):
+        """Unpublish the project to remove it from annotator availability."""
+        self.is_published = False
+        self.save(update_fields=['is_published'])
+        return True
+
+    @property
+    def can_publish(self):
+        """Check if project can be published (has budget > 0)."""
+        return self.budget_usdc > 0
 
     @property
     def completion_percentage(self):

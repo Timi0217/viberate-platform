@@ -172,6 +172,46 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
             'tasks_updated': tasks_updated
         }
 
+    @action(detail=True, methods=['post'])
+    def publish(self, request, pk=None):
+        """Publish the project to make tasks available to annotators."""
+        project = self.get_object()
+
+        if not project.researcher == request.user:
+            return Response(
+                {'error': 'Only the project owner can publish.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            project.publish()
+            return Response({
+                'status': 'published',
+                'message': f'Project "{project.title}" is now live and available to annotators.'
+            })
+        except ValueError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['post'])
+    def unpublish(self, request, pk=None):
+        """Unpublish the project to remove tasks from annotator availability."""
+        project = self.get_object()
+
+        if not project.researcher == request.user:
+            return Response(
+                {'error': 'Only the project owner can unpublish.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        project.unpublish()
+        return Response({
+            'status': 'unpublished',
+            'message': f'Project "{project.title}" has been removed from the network.'
+        })
+
     @action(detail=False, methods=['get'])
     def available_projects(self, request):
         """List available projects from Label Studio (not yet imported)."""

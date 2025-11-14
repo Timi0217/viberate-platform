@@ -279,6 +279,26 @@ function App() {
     }
   };
 
+  const handlePublishProject = async (projectId: number) => {
+    try {
+      await labelStudioAPI.publishProject(projectId);
+      await loadProjects();
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to publish project');
+    }
+  };
+
+  const handleUnpublishProject = async (projectId: number) => {
+    try {
+      await labelStudioAPI.unpublishProject(projectId);
+      await loadProjects();
+      setError('');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to unpublish project');
+    }
+  };
+
   const loadTasks = async () => {
     try {
       const data = await tasksAPI.list();
@@ -961,6 +981,38 @@ function App() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
                               <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price per Task</span>
                               <span style={{ fontSize: '20px', fontWeight: '700' }}>${parseFloat(project.price_per_task || '5.00').toFixed(2)}</span>
+                              <button
+                                onClick={() => {
+                                  if (project.is_published) {
+                                    handleUnpublishProject(project.id);
+                                  } else {
+                                    handlePublishProject(project.id);
+                                  }
+                                }}
+                                disabled={!project.can_publish && !project.is_published}
+                                style={{
+                                  marginTop: '8px',
+                                  padding: '8px 16px',
+                                  borderRadius: '8px',
+                                  border: 'none',
+                                  backgroundColor: project.is_published ? '#EF4444' : '#10B981',
+                                  color: 'white',
+                                  fontSize: '13px',
+                                  fontWeight: '600',
+                                  cursor: (!project.can_publish && !project.is_published) ? 'not-allowed' : 'pointer',
+                                  opacity: (!project.can_publish && !project.is_published) ? 0.5 : 1,
+                                  transition: 'all 0.2s'
+                                }}
+                                title={
+                                  !project.can_publish && !project.is_published
+                                    ? 'Set a budget greater than $0 to publish'
+                                    : project.is_published
+                                    ? 'Remove from network'
+                                    : 'Publish to network'
+                                }
+                              >
+                                {project.is_published ? 'Unpublish' : 'Publish'}
+                              </button>
                             </div>
                           </div>
                         </div>

@@ -47,6 +47,8 @@ export interface LabelStudioProject {
   description: string;
   researcher_username: string;
   is_active: boolean;
+  is_published: boolean;
+  can_publish: boolean;
   total_tasks: number;
   completed_tasks: number;
   completion_percentage: number;
@@ -160,6 +162,16 @@ export const labelStudioAPI = {
 
   deleteProject: async (id: number) => {
     const response = await api.delete(`/api/labelstudio/projects/${id}/`);
+    return response.data;
+  },
+
+  publishProject: async (id: number) => {
+    const response = await api.post(`/api/labelstudio/projects/${id}/publish/`);
+    return response.data;
+  },
+
+  unpublishProject: async (id: number) => {
+    const response = await api.post(`/api/labelstudio/projects/${id}/unpublish/`);
     return response.data;
   },
 };
