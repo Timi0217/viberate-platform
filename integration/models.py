@@ -81,9 +81,9 @@ class LabelStudioProject(models.Model):
         if self.budget_usdc > 0 and self.total_tasks > 0:
             # Divide budget by total tasks to get price per task
             self.price_per_task = self.budget_usdc / self.total_tasks
-        elif self.budget_usdc == 0:
-            # No budget set, use default price
-            self.price_per_task = 5.00
+        else:
+            # No budget set, price per task is 0
+            self.price_per_task = 0.00
         self.save(update_fields=['price_per_task'])
 
     @property
