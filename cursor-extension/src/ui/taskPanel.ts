@@ -96,11 +96,24 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
     private async handleClaimTask(taskId: number) {
         try {
-            await this.taskManager.claimTask(taskId);
-            vscode.window.showInformationMessage('Task claimed successfully!');
+            // Claim the task
+            const assignment = await this.taskManager.claimTask(taskId);
+
+            // Automatically start the assignment so the annotation form appears immediately
+            await this.taskManager.startAssignment(assignment.id);
+
+            vscode.window.showInformationMessage('Task claimed! You can now complete the annotation.');
             await this.refresh();
         } catch (error: any) {
-            vscode.window.showErrorMessage(`Failed to claim task: ${error.message}`);
+            // Handle common errors with better messages
+            if (error.response?.status === 400) {
+                vscode.window.showErrorMessage('This task is no longer available. Please refresh and try another task.');
+            } else if (error.response?.status === 403) {
+                vscode.window.showErrorMessage('You do not have permission to claim this task.');
+            } else {
+                vscode.window.showErrorMessage(`Failed to claim task: ${error.message}`);
+            }
+            await this.refresh(); // Refresh to update the task list
         }
     }
 
@@ -732,8 +745,29 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         }
                     }
 
+                    let isClaimingTask = false;
+
                     function claimTask(taskId) {
+                        // Prevent duplicate claims
+                        if (isClaimingTask) {
+                            return;
+                        }
+
+                        isClaimingTask = true;
+
+                        // Find and disable the claim button
+                        const claimBtn = document.querySelector(\`[data-action="claim-task"][data-task-id="\${taskId}"]\`);
+                        if (claimBtn) {
+                            claimBtn.disabled = true;
+                            claimBtn.textContent = 'Claiming...';
+                        }
+
                         vscode.postMessage({ type: 'claim-task', taskId });
+
+                        // Reset after a timeout (in case the response is slow)
+                        setTimeout(() => {
+                            isClaimingTask = false;
+                        }, 3000);
                     }
 
                     function startAssignment(assignmentId) {
