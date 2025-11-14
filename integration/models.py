@@ -97,7 +97,7 @@ class LabelStudioProject(models.Model):
     def remaining_budget(self):
         """Calculate remaining budget (total - spent on completed tasks)."""
         from decimal import Decimal
-        spent = Decimal(self.completed_tasks) * self.price_per_task
+        spent = Decimal(str(self.completed_tasks)) * Decimal(str(self.price_per_task))
         return self.budget_usdc - spent
 
 
