@@ -776,6 +776,39 @@ function App() {
                 </button>
               </div>
 
+              {/* Available Projects to Import - Show first for better UX */}
+              {availableProjects && availableProjects.length > 0 && (
+                <div style={{ marginBottom: '40px' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1D1D1F', margin: '0 0 6px 0' }}>Available Projects to Import</h3>
+                    <p style={{ fontSize: '15px', color: '#86868B', margin: 0 }}>Select projects from your Label Studio account to import</p>
+                  </div>
+                  <div className="projects-grid">
+                    {availableProjects.map((project) => (
+                      <div key={project.id} className="import-project-card">
+                        <div style={{ flex: 1 }}>
+                          <h4 className="project-title" style={{ marginBottom: '8px' }}>{project.title}</h4>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#86868B', fontSize: '14px' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M9 11l3 3L22 4"/>
+                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                            <span style={{ fontWeight: '500' }}>{project.task_number} tasks</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleImportProject(project.id)}
+                          disabled={loading}
+                          className="btn-import"
+                        >
+                          {loading ? 'Importing...' : 'Import'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="projects-section">
                 <div className="section-header">
                   <h3 className="section-title">Your Projects</h3>
@@ -925,38 +958,6 @@ function App() {
                   </div>
                 )}
               </div>
-
-              {availableProjects && availableProjects.length > 0 && (
-                <div style={{ marginTop: '40px' }}>
-                  <div style={{ marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1D1D1F', margin: '0 0 6px 0' }}>Available Projects to Import</h3>
-                    <p style={{ fontSize: '15px', color: '#86868B', margin: 0 }}>Select projects from your Label Studio account to import</p>
-                  </div>
-                  <div className="projects-grid">
-                    {availableProjects.map((project) => (
-                      <div key={project.id} className="import-project-card">
-                        <div style={{ flex: 1 }}>
-                          <h4 className="project-title" style={{ marginBottom: '8px' }}>{project.title}</h4>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#86868B', fontSize: '14px' }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M9 11l3 3L22 4"/>
-                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                            </svg>
-                            <span style={{ fontWeight: '500' }}>{project.task_number} tasks</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleImportProject(project.id)}
-                          disabled={loading}
-                          className="btn-import"
-                        >
-                          {loading ? 'Importing...' : 'Import'}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
           </div>
