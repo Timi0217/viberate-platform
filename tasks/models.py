@@ -77,11 +77,13 @@ class Task(models.Model):
         return self.status == 'available'
 
     def assign_to(self, annotator):
-        """Assign this task to an annotator."""
+        """Assign this task to an annotator and automatically start it."""
+        from django.utils import timezone
         assignment = TaskAssignment.objects.create(
             task=self,
             annotator=annotator,
-            status='assigned'
+            status='in_progress',  # Auto-start for better UX
+            started_at=timezone.now()
         )
         self.status = 'assigned'
         self.save(update_fields=['status'])
