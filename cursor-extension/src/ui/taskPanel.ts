@@ -435,7 +435,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 <div class="balance">
                                     <div class="balance-label">💰 YOUR EARNINGS</div>
                                     <div class="balance-amount">$\${parseFloat(user.usdc_balance || '0').toFixed(2)}</div>
-                                    <div style="font-size: 12px; color: var(--vscode-descriptionForeground); margin-top: 4px;">USDC on Base</div>
+                                    <div style="font-size: 12px; color: var(--vscode-descriptionForeground); margin-top: 4px;">USDC</div>
                                 </div>
                                 \${walletSection}
                                 <button id="refresh-btn" class="secondary">
@@ -444,7 +444,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     </svg>
                                     Refresh Tasks
                                 </button>
-                                <button id="logout-btn" class="secondary" style="margin-top: 0;">
+                                <button id="logout-btn" style="margin-top: 0; background-color: #DC2626; color: white;">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
                                     </svg>
