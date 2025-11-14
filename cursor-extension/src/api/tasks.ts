@@ -55,7 +55,7 @@ export class TaskManager {
     async getMyAssignments(): Promise<TaskAssignment[]> {
         try {
             const client = this.authManager.getApiClient();
-            const response = await client.get('/assignments/my_assignments/');
+            const response = await client.get('/task-assignments/my_assignments/');
             return response.data;
         } catch (error) {
             console.error('Error fetching assignments:', error);
@@ -73,13 +73,13 @@ export class TaskManager {
 
     async acceptAssignment(assignmentId: number): Promise<TaskAssignment> {
         const client = this.authManager.getApiClient();
-        const response = await client.post(`/assignments/${assignmentId}/accept/`);
+        const response = await client.post(`/task-assignments/${assignmentId}/accept/`);
         return response.data;
     }
 
     async startAssignment(assignmentId: number): Promise<TaskAssignment> {
         const client = this.authManager.getApiClient();
-        const response = await client.post(`/assignments/${assignmentId}/start/`);
+        const response = await client.post(`/task-assignments/${assignmentId}/start/`);
         return response.data;
     }
 
@@ -88,7 +88,7 @@ export class TaskManager {
         annotationResult: any
     ): Promise<TaskAssignment> {
         const client = this.authManager.getApiClient();
-        const response = await client.post(`/assignments/${assignmentId}/submit/`, {
+        const response = await client.post(`/task-assignments/${assignmentId}/submit/`, {
             annotation_result: annotationResult,
             sync_to_labelstudio: true
         });
@@ -97,7 +97,7 @@ export class TaskManager {
 
     async cancelAssignment(assignmentId: number): Promise<TaskAssignment> {
         const client = this.authManager.getApiClient();
-        const response = await client.post(`/assignments/${assignmentId}/cancel/`);
+        const response = await client.post(`/task-assignments/${assignmentId}/cancel/`);
         return response.data;
     }
 
