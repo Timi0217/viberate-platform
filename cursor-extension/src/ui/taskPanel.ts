@@ -99,10 +99,27 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
             // Claim the task
             const assignment = await this.taskManager.claimTask(taskId);
 
-            // Automatically start the assignment so the annotation form appears immediately
-            await this.taskManager.startAssignment(assignment.id);
+            if (!assignment || !assignment.id) {
+                throw new Error('Assignment was not created properly');
+            }
 
-            vscode.window.showInformationMessage('Task claimed! You can now complete the annotation.');
+            // Refresh first to show the assignment
+            await this.refresh();
+
+            // Add a small delay to ensure backend state is consistent
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Try to automatically start the assignment
+            try {
+                await this.taskManager.startAssignment(assignment.id);
+                vscode.window.showInformationMessage('Task claimed and started! Complete the annotation below.');
+            } catch (startError: any) {
+                // If auto-start fails, that's okay - user can manually start
+                console.error('Auto-start failed:', startError);
+                vscode.window.showInformationMessage('Task claimed! Click "Start Task" to begin annotation.');
+            }
+
+            // Refresh again to show the updated state
             await this.refresh();
         } catch (error: any) {
             // Handle common errors with better messages
@@ -110,6 +127,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                 vscode.window.showErrorMessage('This task is no longer available. Please refresh and try another task.');
             } else if (error.response?.status === 403) {
                 vscode.window.showErrorMessage('You do not have permission to claim this task.');
+            } else if (error.response?.status === 404) {
+                vscode.window.showErrorMessage('Task not found. It may have been claimed by another user.');
             } else {
                 vscode.window.showErrorMessage(`Failed to claim task: ${error.message}`);
             }

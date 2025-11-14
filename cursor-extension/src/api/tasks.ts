@@ -79,6 +79,8 @@ export class TaskManager {
 
     async startAssignment(assignmentId: number): Promise<TaskAssignment> {
         const client = this.authManager.getApiClient();
+        console.log('Starting assignment with ID:', assignmentId);
+        console.log('Start endpoint:', `/task-assignments/${assignmentId}/start/`);
         const response = await client.post(`/task-assignments/${assignmentId}/start/`);
         return response.data;
     }
