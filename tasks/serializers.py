@@ -7,13 +7,14 @@ class TaskSerializer(serializers.ModelSerializer):
     """Serializer for Task model."""
     project_title = serializers.CharField(source='project.title', read_only=True)
     has_active_assignment = serializers.SerializerMethodField()
+    price_per_task = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
         fields = [
             'id', 'labelstudio_task_id', 'project', 'project_title',
             'data', 'status', 'difficulty', 'reward_points',
-            'has_active_assignment', 'created_at', 'updated_at'
+            'has_active_assignment', 'price_per_task', 'created_at', 'updated_at'
         ]
         read_only_fields = [
             'id', 'labelstudio_task_id', 'project', 'status',
@@ -25,6 +26,13 @@ class TaskSerializer(serializers.ModelSerializer):
         return obj.assignments.filter(
             status__in=['assigned', 'accepted', 'in_progress']
         ).exists()
+
+    def get_price_per_task(self, obj):
+        """Calculate price per task from project budget."""
+        from decimal import Decimal
+        if obj.project.total_tasks > 0:
+            return float(Decimal(str(obj.project.budget_usdc)) / Decimal(str(obj.project.total_tasks)))
+        return 0.0
 
 
 class TaskAssignmentSerializer(serializers.ModelSerializer):

@@ -841,11 +841,13 @@ body {
   border-radius: 12px;
   padding: 24px;
   transition: all 0.2s;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.06);
 }
 
 .project-card:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 122, 255, 0.12);
+  border-color: #007AFF;
+  box-shadow: 0 8px 20px 0 rgba(0, 122, 255, 0.15), 0 4px 8px 0 rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
