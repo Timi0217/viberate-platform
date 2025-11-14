@@ -1076,6 +1076,51 @@ body {
   background: #0051D5;
 }
 
+/* Import Project Cards */
+.import-project-card {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+.import-project-card:hover {
+  border-color: #007AFF;
+  box-shadow: 0 4px 12px 0 rgba(0, 122, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-import {
+  padding: 10px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+  color: white;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px 0 rgba(0, 122, 255, 0.2);
+}
+
+.btn-import:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 rgba(0, 122, 255, 0.3);
+}
+
+.btn-import:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Confirmation Modal */
 .confirm-modal {
   background: white;
