@@ -517,9 +517,12 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         html += '<div class="section-divider"></div>';
                         html += '<h2>Available Projects</h2>';
                         if (availableTasks && availableTasks.length > 0) {
+                            console.log('Available tasks received:', availableTasks.length, availableTasks);
+
                             // Group tasks by project
                             const projectGroups = {};
                             availableTasks.forEach(task => {
+                                console.log('Processing task:', task.id, 'Project:', task.project, task.project_title);
                                 const projectKey = task.project_title || \`Project \${task.project}\`;
                                 if (!projectGroups[projectKey]) {
                                     projectGroups[projectKey] = {
@@ -531,6 +534,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 }
                                 projectGroups[projectKey].tasks.push(task);
                             });
+
+                            console.log('Project groups created:', Object.keys(projectGroups), projectGroups);
 
                             // Render project cards
                             Object.values(projectGroups).forEach(projectGroup => {
