@@ -243,3 +243,31 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    @action(detail=False, methods=['post'])
+    def fix_all_tasks(self, request):
+        """Set all tasks to 'available' status for all published projects."""
+        # Get all published projects for this user
+        published_projects = LabelStudioProject.objects.filter(
+            researcher=request.user,
+            is_published=True
+        )
+
+        results = []
+        total_updated = 0
+
+        for project in published_projects:
+            # Update ALL tasks to available
+            updated = Task.objects.filter(project=project).update(status='available')
+            total_updated += updated
+
+            results.append({
+                'project': project.title,
+                'tasks_updated': updated
+            })
+
+        return Response({
+            'status': 'success',
+            'total_tasks_updated': total_updated,
+            'projects': results
+        })
