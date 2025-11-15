@@ -94,9 +94,13 @@ class LabelStudioProject(models.Model):
         """
         Publish the project to make it available for annotators.
         Validates that budget > 0 before publishing.
+        Also makes all pending tasks available.
         """
         if self.budget_usdc <= 0:
             raise ValueError("Cannot publish project with budget of $0. Please set a budget first.")
+
+        # Make all pending tasks available when publishing
+        self.tasks.filter(status='pending').update(status='available')
 
         self.is_published = True
         self.save(update_fields=['is_published'])
