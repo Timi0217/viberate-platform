@@ -235,6 +235,12 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         border-color: var(--vscode-focusBorder);
                         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                     }
+                    .task-card.expanded .task-details {
+                        max-height: 2000px !important;
+                    }
+                    .task-card.expanded svg {
+                        transform: rotate(180deg);
+                    }
                     .task-card h3 {
                         margin: 0 0 10px 0;
                         font-size: 14px;
@@ -610,18 +616,24 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         }
 
                         return \`
-                            <div class="task-card">
-                                <h3>Task #\${task.id}</h3>
-                                <div style="font-size: 12px; color: var(--vscode-descriptionForeground); margin-bottom: 4px;">
-                                    Project: \${escapeHtml(projectTitle)}
-                                </div>
-                                <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                            <div class="task-card" style="overflow: hidden;">
+                                <div
+                                    onclick="this.parentElement.classList.toggle('expanded')"
+                                    style="display: flex; gap: 8px; align-items: center; cursor: pointer; padding: 8px 0; user-select: none;"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="transition: transform 0.2s; flex-shrink: 0;">
+                                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
                                     <span class="badge available">Available</span>
                                     <span style="font-size: 13px; font-weight: 600; color: #2ea043;">$\${pricePerTask} USDC</span>
                                 </div>
-                                \${mediaHtml}
-                                \${textContent}
-                                <button data-action="claim-task" data-task-id="\${task.id}">Claim Task</button>
+                                <div class="task-details" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                                    <div style="padding-top: 8px;">
+                                        \${mediaHtml}
+                                        \${textContent}
+                                        <button data-action="claim-task" data-task-id="\${task.id}" style="margin-top: 12px;">Claim Task</button>
+                                    </div>
+                                </div>
                             </div>
                         \`;
                     }
