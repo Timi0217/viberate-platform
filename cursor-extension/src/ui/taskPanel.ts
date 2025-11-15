@@ -491,15 +491,20 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         \`;
 
                         // My assignments section
+                        console.log('Rendering UI - myAssignments:', myAssignments);
                         if (myAssignments && myAssignments.length > 0) {
+                            console.log('Rendering MY ASSIGNMENTS section with', myAssignments.length, 'assignments');
                             html += \`
-                                <div style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                                <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                                     <h2 style="margin: 0 0 12px 0;">📋 My Assignments (\${myAssignments.length})</h2>
                             \`;
                             myAssignments.forEach(assignment => {
+                                console.log('Rendering assignment:', assignment);
                                 html += renderAssignmentCard(assignment);
                             });
                             html += '</div>';
+                        } else {
+                            console.log('NO ASSIGNMENTS TO RENDER - myAssignments:', myAssignments);
                         }
 
                         // Available tasks section
@@ -520,6 +525,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         }
 
                         app.innerHTML = html;
+
+                        // Auto-scroll to My Assignments section if it exists
+                        const myAssignmentsSection = document.getElementById('my-assignments-section');
+                        if (myAssignmentsSection) {
+                            console.log('Scrolling to My Assignments section');
+                            myAssignmentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
 
                         // Attach event listeners using delegation
                         const refreshBtn = document.getElementById('refresh-btn');
@@ -645,8 +657,10 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         } else if (status === 'submitted') {
                             actionButton = '<p style="color: #bf8700;">⏳ Waiting for researcher approval...</p>';
                         } else if (status === 'approved') {
-                            const paymentAmount = escapeHtml(assignment.payment_amount);
-                            actionButton = \`<p style="color: #2ea043;">✓ Approved! Payment: $\${paymentAmount} USDC</p>\`;
+                            actionButton = '<p style="color: #2ea043;">✅ Approved! Payment processed.</p>';
+                        } else if (status === 'rejected') {
+                            const feedback = assignment.feedback || 'No feedback provided';
+                            actionButton = \`<p style="color: #d73a49;">❌ Rejected. Reason: \${escapeHtml(feedback)}</p>\`;
                         }
 
                         const projectTitle = task.project_title || 'Unknown Project';
