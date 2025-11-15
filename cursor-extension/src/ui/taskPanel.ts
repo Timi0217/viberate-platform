@@ -513,19 +513,35 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             console.log('NO ASSIGNMENTS TO RENDER - myAssignments:', myAssignments);
                         }
 
-                        // Available tasks section
+                        // Available tasks section - grouped by project
                         html += '<div class="section-divider"></div>';
-                        html += '<h2>Available Tasks</h2>';
+                        html += '<h2>Available Projects</h2>';
                         if (availableTasks && availableTasks.length > 0) {
+                            // Group tasks by project
+                            const projectGroups = {};
                             availableTasks.forEach(task => {
-                                html += renderTaskCard(task);
+                                const projectKey = task.project_title || \`Project \${task.project}\`;
+                                if (!projectGroups[projectKey]) {
+                                    projectGroups[projectKey] = {
+                                        project_title: projectKey,
+                                        project_id: task.project,
+                                        price_per_task: task.price_per_task || '0.00',
+                                        tasks: []
+                                    };
+                                }
+                                projectGroups[projectKey].tasks.push(task);
+                            });
+
+                            // Render project cards
+                            Object.values(projectGroups).forEach(projectGroup => {
+                                html += renderProjectCard(projectGroup);
                             });
                         } else {
                             html += \`
                                 <div class="empty-state">
                                     <div class="empty-state-icon">📋</div>
-                                    <h3>No Tasks Available</h3>
-                                    <p>Check back later for new annotation tasks!</p>
+                                    <h3>No Projects Available</h3>
+                                    <p>Check back later for new annotation projects!</p>
                                 </div>
                             \`;
                         }
@@ -592,6 +608,30 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 target = target.parentElement;
                             }
                         });
+                    }
+
+                    function renderProjectCard(projectGroup) {
+                        const pricePerTask = parseFloat(projectGroup.price_per_task).toFixed(2);
+                        const taskCount = projectGroup.tasks.length;
+                        const firstTaskId = projectGroup.tasks[0].id; // We'll claim the first available task
+
+                        return \`
+                            <div class="task-card" style="overflow: visible;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <div style="flex: 1;">
+                                        <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--vscode-foreground);">\${escapeHtml(projectGroup.project_title)}</h3>
+                                        <div style="margin-top: 6px; font-size: 12px; color: var(--vscode-descriptionForeground);">
+                                            \${taskCount} task\${taskCount !== 1 ? 's' : ''} available
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 16px; font-weight: 600; color: #2ea043; margin-bottom: 4px;">$\${pricePerTask}</div>
+                                        <div style="font-size: 11px; color: var(--vscode-descriptionForeground);">USDC / task</div>
+                                    </div>
+                                </div>
+                                <button data-action="claim-task" data-task-id="\${firstTaskId}" style="width: 100%;">Claim Task</button>
+                            </div>
+                        \`;
                     }
 
                     function renderTaskCard(task) {
