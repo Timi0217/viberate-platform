@@ -83,6 +83,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
         const availableTasks = isAuthenticated ? await this.taskManager.getAvailableTasks() : [];
         const myAssignments = isAuthenticated ? await this.taskManager.getMyAssignments() : [];
 
+        console.log('Sending data to webview:', {
+            isAuthenticated,
+            availableTasksCount: availableTasks.length,
+            myAssignmentsCount: myAssignments.length,
+            myAssignments
+        });
+
         this._view.webview.postMessage({
             type: 'update',
             data: {
@@ -97,17 +104,24 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
     private async handleClaimTask(taskId: number) {
         try {
             // Claim the task (backend automatically starts it)
+            console.log('Claiming task:', taskId);
             const assignment = await this.taskManager.claimTask(taskId);
+            console.log('Claim response:', assignment);
 
             if (!assignment || !assignment.id) {
                 throw new Error('Assignment was not created properly');
             }
 
-            // Refresh to show the assignment with annotation form
+            // Wait a bit for backend to fully process
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Force refresh to show the assignment with annotation form
+            console.log('Refreshing tasks after claim...');
             await this.refresh();
 
-            vscode.window.showInformationMessage('✅ Task claimed! Complete the annotation form below. You can cancel anytime.');
+            vscode.window.showInformationMessage('✅ Task claimed! Look for the green "My Assignments" section above. You can cancel anytime.');
         } catch (error: any) {
+            console.error('Claim error:', error);
             // Handle common errors with better messages
             if (error.response?.status === 400) {
                 vscode.window.showErrorMessage('This task is no longer available. Please refresh and try another task.');
@@ -383,8 +397,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     // Listen for messages from extension
                     window.addEventListener('message', event => {
                         const message = event.data;
+                        console.log('Webview received message:', message);
                         if (message.type === 'update') {
                             currentData = message.data;
+                            console.log('Updated currentData:', {
+                                myAssignmentsCount: currentData.myAssignments?.length,
+                                myAssignments: currentData.myAssignments
+                            });
                             renderUI();
                         }
                     });
