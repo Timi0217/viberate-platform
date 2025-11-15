@@ -63,6 +63,9 @@ class PaymentService:
         if amount_usdc <= 0:
             raise ValueError("Payment amount must be greater than zero")
 
+        # Calculate 10% platform fee
+        platform_fee_usdc = (amount_usdc * Decimal('0.10')).quantize(Decimal('0.000001'))
+
         # Generate unique transaction ID
         transaction_id = str(uuid.uuid4())
 
@@ -76,6 +79,7 @@ class PaymentService:
             assignment=assignment,
             recipient=assignment.annotator,
             amount_usdc=amount_usdc,
+            platform_fee_usdc=platform_fee_usdc,
             blockchain_network=self.network,
             from_address=from_address,
             to_address=assignment.annotator.base_wallet_address,

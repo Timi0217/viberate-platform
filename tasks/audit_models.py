@@ -184,7 +184,14 @@ class PaymentTransaction(models.Model):
     amount_usdc = models.DecimalField(
         max_digits=18,
         decimal_places=6,
-        help_text="Amount in USDC"
+        help_text="Amount in USDC paid to annotator"
+    )
+
+    platform_fee_usdc = models.DecimalField(
+        max_digits=18,
+        decimal_places=6,
+        default=0,
+        help_text="Platform fee (10% of amount_usdc)"
     )
 
     # Blockchain details
