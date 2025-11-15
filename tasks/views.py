@@ -365,7 +365,7 @@ class TaskAssignmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def my_assignments(self, request):
-        """Get current user's assignments."""
+        """Get current user's assignments (excludes cancelled)."""
         if not request.user.is_annotator():
             return Response(
                 {'error': 'Only annotators have assignments.'},
@@ -374,7 +374,7 @@ class TaskAssignmentViewSet(viewsets.ModelViewSet):
 
         assignments = self.get_queryset().filter(
             annotator=request.user
-        ).order_by('-created_at')
+        ).exclude(status='cancelled').order_by('-created_at')
 
         serializer = self.get_serializer(assignments, many=True)
         return Response(serializer.data)
