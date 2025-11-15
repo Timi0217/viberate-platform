@@ -32,12 +32,12 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
         # Researchers see tasks from their projects
         if user.is_researcher():
             queryset = queryset.filter(project__researcher=user)
-        # Annotators see available tasks from active, published projects
+        # Annotators see tasks from active, published projects
+        # Don't filter by task status - if project is published, tasks are available
         else:
             queryset = queryset.filter(
                 project__is_active=True,
-                project__is_published=True,
-                status='available'
+                project__is_published=True
             )
 
         # Filter by project
