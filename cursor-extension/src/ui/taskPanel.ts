@@ -580,6 +580,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     } else if (action === 'validate-json') {
                                         validateJSON(parseInt(target.dataset.assignmentId));
                                         return;
+                                    } else if (action === 'toggle-task') {
+                                        // Find the task card (parent element)
+                                        const taskCard = target.closest('.task-card');
+                                        if (taskCard) {
+                                            taskCard.classList.toggle('expanded');
+                                        }
+                                        return;
                                     }
                                 }
                                 target = target.parentElement;
@@ -618,7 +625,9 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         return \`
                             <div class="task-card" style="overflow: hidden;">
                                 <div
-                                    onclick="this.parentElement.classList.toggle('expanded')"
+                                    class="task-header"
+                                    data-action="toggle-task"
+                                    data-task-id="\${task.id}"
                                     style="display: flex; gap: 8px; align-items: center; cursor: pointer; padding: 8px 0; user-select: none;"
                                 >
                                     <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="transition: transform 0.2s; flex-shrink: 0;">
