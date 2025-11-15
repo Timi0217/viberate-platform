@@ -633,8 +633,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="transition: transform 0.2s; flex-shrink: 0;">
                                         <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
-                                    <span class="badge available">Available</span>
-                                    <span style="font-size: 13px; font-weight: 600; color: #2ea043;">$\${pricePerTask} USDC</span>
+                                    <span style="font-size: 14px; font-weight: 600; color: #2ea043;">$\${pricePerTask} USDC</span>
                                 </div>
                                 <div class="task-details" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
                                     <div style="padding-top: 8px;">
