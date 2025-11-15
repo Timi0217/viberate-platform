@@ -775,15 +775,15 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     function validateJSON(assignmentId) {
                         const textarea = document.getElementById('result-' + assignmentId);
                         if (!textarea) {
-                            alert('Could not find annotation textarea');
+                            console.error('Could not find annotation textarea');
                             return;
                         }
 
                         try {
                             const result = JSON.parse(textarea.value);
-                            alert('✓ Valid JSON!\\n\\nParsed:\\n' + JSON.stringify(result, null, 2));
+                            console.log('✓ Valid JSON!', result);
                         } catch (error) {
-                            alert('✗ Invalid JSON!\\n\\nError: ' + error.message + '\\n\\nPlease fix the JSON format before submitting.');
+                            console.error('✗ Invalid JSON!', error.message);
                         }
                     }
 
@@ -817,9 +817,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     }
 
                     function cancelAssignment(assignmentId) {
-                        if (confirm('Are you sure you want to cancel this assignment? The task will become available for others.')) {
-                            vscode.postMessage({ type: 'cancel-assignment', assignmentId });
-                        }
+                        // No confirmation needed - just cancel
+                        vscode.postMessage({ type: 'cancel-assignment', assignmentId });
                     }
 
                     function submitSimpleAnnotation(assignmentId) {
@@ -834,7 +833,17 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             try {
                                 result = JSON.parse(customJson);
                             } catch (error) {
-                                alert('Invalid custom JSON format. Please check your JSON or leave it empty to use the simple form.');
+                                console.error('Invalid custom JSON format:', error);
+                                // Show error in the UI instead of alert
+                                const errorDiv = document.createElement('div');
+                                errorDiv.style.color = '#d73a49';
+                                errorDiv.style.padding = '8px';
+                                errorDiv.style.marginTop = '8px';
+                                errorDiv.style.backgroundColor = 'rgba(215, 58, 73, 0.1)';
+                                errorDiv.style.borderRadius = '4px';
+                                errorDiv.textContent = 'Invalid JSON format. Please check your JSON or leave it empty to use the simple form.';
+                                customJsonTextarea.parentElement.insertBefore(errorDiv, customJsonTextarea.nextSibling);
+                                setTimeout(() => errorDiv.remove(), 5000);
                                 return;
                             }
                         } else {
@@ -846,7 +855,17 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             const notes = notesTextarea ? notesTextarea.value.trim() : '';
 
                             if (!label) {
-                                alert('Please enter a label/classification for this annotation.');
+                                console.error('No label provided');
+                                // Show error in the UI instead of alert
+                                const errorDiv = document.createElement('div');
+                                errorDiv.style.color = '#d73a49';
+                                errorDiv.style.padding = '8px';
+                                errorDiv.style.marginTop = '8px';
+                                errorDiv.style.backgroundColor = 'rgba(215, 58, 73, 0.1)';
+                                errorDiv.style.borderRadius = '4px';
+                                errorDiv.textContent = 'Please enter a label/classification for this annotation.';
+                                labelInput.parentElement.appendChild(errorDiv);
+                                setTimeout(() => errorDiv.remove(), 5000);
                                 return;
                             }
 
@@ -872,7 +891,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     function submitAssignment(assignmentId) {
                         const textarea = document.getElementById('result-' + assignmentId);
                         if (!textarea) {
-                            alert('Could not find annotation textarea');
+                            console.error('Could not find annotation textarea');
                             return;
                         }
                         try {
@@ -883,7 +902,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 result
                             });
                         } catch (error) {
-                            alert('Invalid JSON format. Please check your annotation result.');
+                            console.error('Invalid JSON format:', error);
                         }
                     }
                 </script>
