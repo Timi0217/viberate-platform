@@ -271,3 +271,54 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
             'total_tasks_updated': total_updated,
             'projects': results
         })
+
+    @action(detail=False, methods=['get'])
+    def debug_tasks(self, request):
+        """Debug endpoint to show task visibility."""
+        from tasks.models import Task
+        from collections import defaultdict
+
+        # Get all projects
+        projects = LabelStudioProject.objects.all()
+
+        result = {
+            'total_projects': projects.count(),
+            'projects': []
+        }
+
+        for project in projects:
+            tasks = Task.objects.filter(project=project)
+            total_tasks = tasks.count()
+
+            # Count by status
+            status_counts = defaultdict(int)
+            for task in tasks:
+                status_counts[task.status] += 1
+
+            result['projects'].append({
+                'id': project.id,
+                'title': project.title,
+                'researcher': project.researcher.email,
+                'is_active': project.is_active,
+                'is_published': project.is_published,
+                'budget_usdc': str(project.budget_usdc),
+                'total_tasks': total_tasks,
+                'status_breakdown': dict(status_counts)
+            })
+
+        # Simulate annotator query
+        annotator_tasks = Task.objects.filter(
+            project__is_active=True,
+            project__is_published=True
+        ).select_related('project')
+
+        annotator_view = defaultdict(lambda: defaultdict(int))
+        for task in annotator_tasks:
+            annotator_view[task.project.title][task.status] += 1
+
+        result['annotator_view'] = {
+            'total_visible_tasks': annotator_tasks.count(),
+            'by_project': dict(annotator_view)
+        }
+
+        return Response(result)
