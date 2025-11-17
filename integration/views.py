@@ -265,6 +265,21 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
         # Build response
         result = []
         for project in projects:
+            # If label_config is missing, try to fetch from Label Studio
+            label_config = project.label_config
+            if not label_config:
+                try:
+                    from .labelstudio_client import create_client_for_user
+                    ls_client = create_client_for_user(project.researcher)
+                    ls_project = ls_client.get_project(project.labelstudio_project_id)
+                    label_config = ls_project.get('label_config')
+                    # Save it for next time
+                    if label_config:
+                        project.label_config = label_config
+                        project.save()
+                except Exception as e:
+                    print(f"Error fetching label_config for project {project.id}: {e}")
+
             result.append({
                 'id': project.id,
                 'title': project.title,
@@ -272,6 +287,7 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
                 'available_tasks_count': project.available_tasks_count,
                 'price_per_task': float(project.price_per_task),
                 'budget_usdc': float(project.budget_usdc),
+                'label_config': label_config,
             })
 
         return Response(result)
