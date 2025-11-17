@@ -395,6 +395,25 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         outline: 1px solid var(--vscode-focusBorder);
                         border-color: var(--vscode-focusBorder);
                     }
+                    /* Modern choice option styling */
+                    .choice-option {
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .choice-option:hover {
+                        border-color: var(--vscode-focusBorder) !important;
+                        background-color: var(--vscode-list-hoverBackground) !important;
+                        transform: translateY(-1px);
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                    }
+                    .choice-option:active {
+                        transform: translateY(0);
+                    }
+                    .choice-option:has(input:checked) {
+                        border-color: var(--vscode-focusBorder) !important;
+                        background-color: var(--vscode-list-activeSelectionBackground) !important;
+                        font-weight: 600;
+                    }
                     .balance {
                         background: linear-gradient(135deg, rgba(46, 160, 67, 0.15) 0%, rgba(46, 160, 67, 0.05) 100%);
                         border: 1px solid rgba(46, 160, 67, 0.3);
@@ -1381,18 +1400,18 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             const inputName = \`\${choice.name}-\${assignment.id}\`;
 
                             formContent += \`
-                                <div style="margin-bottom: 16px;">
-                                    <label style="display: block; margin-bottom: 10px; font-weight: 600; font-size: 13px;">\${escapeHtml(choice.name)}:</label>
-                                    \${choice.options.map(option => \`
-                                        <div style="margin-bottom: 8px;">
-                                            <label style="display: flex; align-items: center; cursor: pointer; padding: 8px;">
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 12px; font-weight: 600; font-size: 14px; text-transform: capitalize;">\${escapeHtml(choice.name)}</label>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                                        \${choice.options.map(option => \`
+                                            <label class="choice-option" style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 12px 16px; background-color: var(--vscode-input-background); border: 2px solid var(--vscode-input-border); border-radius: 6px; transition: all 0.2s ease; font-size: 13px; font-weight: 500;">
                                                 <input type="\${inputType}" name="\${inputName}" value="\${escapeHtml(option)}"
                                                        data-control-name="\${escapeHtml(choice.name)}"
-                                                       style="margin-right: 8px;" />
+                                                       style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" />
                                                 <span>\${escapeHtml(option)}</span>
                                             </label>
-                                        </div>
-                                    \`).join('')}
+                                        \`).join('')}
+                                    </div>
                                 </div>
                             \`;
                         });
@@ -1471,14 +1490,14 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             const textAreaId = \`\${textArea.name}-\${assignment.id}\`;
 
                             formContent += \`
-                                <div style="margin-bottom: 16px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">\${escapeHtml(textArea.name)}\${textArea.required ? ' *' : ''}:</label>
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 10px; font-weight: 600; font-size: 14px; text-transform: capitalize;">\${escapeHtml(textArea.name)}\${textArea.required ? ' *' : ''}</label>
                                     <textarea
                                         id="\${textAreaId}"
                                         data-control-name="\${escapeHtml(textArea.name)}"
-                                        rows="3"
+                                        rows="4"
                                         placeholder="\${escapeHtml(textArea.placeholder)}"
-                                        style="width: 100%; padding: 8px; background-color: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 1px solid var(--vscode-input-border); border-radius: 4px; font-size: 13px; resize: vertical;"
+                                        style="width: 100%; padding: 12px; background-color: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 2px solid var(--vscode-input-border); border-radius: 6px; font-size: 13px; line-height: 1.5; resize: vertical; font-family: var(--vscode-font-family); transition: border-color 0.2s ease;"
                                     ></textarea>
                                 </div>
                             \`;
