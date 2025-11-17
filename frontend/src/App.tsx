@@ -43,6 +43,7 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [pendingAssignments, setPendingAssignments] = useState<any[]>([]);
+  const [selectedAssignments, setSelectedAssignments] = useState<Set<number>>(new Set());
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean;
     title: string;
@@ -328,9 +329,85 @@ function App() {
       const assignments = Array.isArray(data) ? data : (data.results || []);
       console.log('Extracted assignments:', assignments);
       setPendingAssignments(assignments);
+      setSelectedAssignments(new Set()); // Clear selection when reloading
     } catch (err: any) {
       console.error('Failed to load pending assignments:', err);
       setPendingAssignments([]);
+    }
+  };
+
+  const toggleAssignmentSelection = (assignmentId: number) => {
+    const newSelected = new Set(selectedAssignments);
+    if (newSelected.has(assignmentId)) {
+      newSelected.delete(assignmentId);
+    } else {
+      newSelected.add(assignmentId);
+    }
+    setSelectedAssignments(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedAssignments.size === pendingAssignments.length) {
+      setSelectedAssignments(new Set());
+    } else {
+      setSelectedAssignments(new Set(pendingAssignments.map(a => a.id)));
+    }
+  };
+
+  const handleBatchApprove = async () => {
+    if (selectedAssignments.size === 0) {
+      alert('Please select at least one assignment to approve.');
+      return;
+    }
+
+    // Calculate total payment
+    let totalPayment = 0;
+    selectedAssignments.forEach(assignmentId => {
+      const assignment = pendingAssignments.find(a => a.id === assignmentId);
+      if (assignment) {
+        const task = assignment.task_data || assignment.task;
+        const project = projects.find(p => p.id === task?.project);
+        const defaultPrice = project?.price_per_task ? parseFloat(project.price_per_task) : 5.00;
+        totalPayment += defaultPrice;
+      }
+    });
+
+    const confirmed = window.confirm(
+      `Approve ${selectedAssignments.size} assignment(s) for a total of $${totalPayment.toFixed(2)} USDC?`
+    );
+
+    if (!confirmed) return;
+
+    setLoading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process each selected assignment
+    for (const assignmentId of Array.from(selectedAssignments)) {
+      try {
+        const assignment = pendingAssignments.find(a => a.id === assignmentId);
+        const task = assignment?.task_data || assignment?.task;
+        const project = projects.find(p => p.id === task?.project);
+        const paymentAmount = project?.price_per_task ? parseFloat(project.price_per_task) : 5.00;
+
+        await assignmentsAPI.approve(assignmentId, paymentAmount);
+        successCount++;
+      } catch (err: any) {
+        console.error(`Failed to approve assignment ${assignmentId}:`, err);
+        errorCount++;
+      }
+    }
+
+    setLoading(false);
+
+    // Reload assignments
+    await loadPendingAssignments();
+
+    // Show result
+    if (errorCount === 0) {
+      alert(`Successfully approved ${successCount} assignment(s)!`);
+    } else {
+      alert(`Approved ${successCount} assignment(s). Failed: ${errorCount}`);
     }
   };
 
@@ -693,93 +770,153 @@ function App() {
                   : 'No pending annotations to review at this time'}
               </p>
             </div>
-            <button
-              onClick={() => loadPendingAssignments()}
-              className="btn btn-secondary"
-              disabled={loading}
-              style={{ whiteSpace: 'nowrap' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-              </svg>
-              Refresh
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {pendingAssignments.length > 0 && (
+                <>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedAssignments.size === pendingAssignments.length && pendingAssignments.length > 0}
+                      onChange={toggleSelectAll}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    Select All
+                  </label>
+                  {selectedAssignments.size > 0 && (
+                    <button
+                      onClick={handleBatchApprove}
+                      className="btn btn-primary"
+                      disabled={loading}
+                      style={{ whiteSpace: 'nowrap' }}
+                    >
+                      Approve Selected ({selectedAssignments.size})
+                    </button>
+                  )}
+                </>
+              )}
+              <button
+                onClick={() => loadPendingAssignments()}
+                className="btn btn-secondary"
+                disabled={loading}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+                Refresh
+              </button>
+            </div>
           </div>
           {pendingAssignments.length > 0 && (
             <div className="card-body">
-              {pendingAssignments.map((assignment: any) => (
-                <div key={assignment.id} className="assignment-card" style={{
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginBottom: '16px',
-                  backgroundColor: 'var(--bg-secondary)'
-                }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <strong>Assignment #{assignment.id}</strong>
-                    <span style={{ marginLeft: '12px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                      Task: {assignment.task_data?.project_title || 'Unknown Project'}
-                    </span>
-                  </div>
-                  <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }}>
-                    <strong>Annotation Result:</strong>
-                    <pre style={{ marginTop: '8px', fontSize: '12px', overflow: 'auto', maxHeight: '200px' }}>
-                      {JSON.stringify(assignment.annotation_result, null, 2)}
-                    </pre>
-                  </div>
-                  <div style={{ marginBottom: '12px' }}>
-                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px' }}>
-                      Payment Amount (USDC):
-                    </label>
-                    {(() => {
-                      // Get the project's price_per_task for this assignment's task
-                      const task = assignment.task_data || assignment.task;
-                      const project = projects.find(p => p.id === task?.project);
-                      const defaultPrice = project?.price_per_task ? parseFloat(project.price_per_task) : 5.00;
-                      return (
+              {pendingAssignments.map((assignment: any) => {
+                const task = assignment.task_data || assignment.task;
+                const project = projects.find(p => p.id === task?.project);
+                const defaultPrice = project?.price_per_task ? parseFloat(project.price_per_task) : 5.00;
+                const taskData = task?.data || {};
+                const isSelected = selectedAssignments.has(assignment.id);
+
+                return (
+                  <div key={assignment.id} className="assignment-card" style={{
+                    border: `2px solid ${isSelected ? 'var(--color-primary, #0066ff)' : 'var(--border-color)'}`,
+                    borderRadius: '8px',
+                    padding: '20px',
+                    marginBottom: '16px',
+                    backgroundColor: isSelected ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    {/* Header with checkbox */}
+                    <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          defaultValue={defaultPrice.toFixed(2)}
-                          id={`payment-${assignment.id}`}
-                          style={{
-                            padding: '8px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--border-color)',
-                            width: '150px'
-                          }}
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleAssignmentSelection(assignment.id)}
+                          style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                         />
-                      );
-                    })()}
+                        <div>
+                          <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+                            Assignment #{assignment.id}
+                          </div>
+                          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                            {assignment.task_data?.project_title || 'Unknown Project'} • ${defaultPrice.toFixed(2)} USDC
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        Submitted: {assignment.submitted_at ? new Date(assignment.submitted_at).toLocaleString() : 'Unknown'}
+                      </div>
+                    </div>
+
+                    {/* Task Data */}
+                    {(taskData.image || taskData.text) && (
+                      <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'var(--bg-primary)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                          Task Data:
+                        </div>
+                        {taskData.image && (
+                          <img
+                            src={taskData.image}
+                            alt="Task"
+                            style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px', marginBottom: taskData.text ? '8px' : '0' }}
+                          />
+                        )}
+                        {taskData.text && (
+                          <div style={{ fontSize: '14px', fontStyle: 'italic' }}>
+                            "{taskData.text}"
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Annotation Result - Formatted */}
+                    <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'var(--bg-primary)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                        Annotation Result:
+                      </div>
+                      {(() => {
+                        const result = assignment.annotation_result;
+                        if (!result) return <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No result</div>;
+
+                        // Format the result in a readable way
+                        return (
+                          <div style={{ fontSize: '14px' }}>
+                            {Object.entries(result).map(([key, value]) => (
+                              <div key={key} style={{ marginBottom: '6px' }}>
+                                <span style={{ fontWeight: '600', textTransform: 'capitalize' }}>{key}:</span>{' '}
+                                <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Individual Actions */}
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => handleApproveAssignment(assignment.id, defaultPrice)}
+                        className="btn btn-primary"
+                        disabled={loading}
+                      >
+                        Approve & Pay ${defaultPrice.toFixed(2)}
+                      </button>
+                      <button
+                        onClick={() => {
+                          const reason = prompt('Reason for rejection (optional):');
+                          if (reason !== null) {
+                            handleRejectAssignment(assignment.id, reason);
+                          }
+                        }}
+                        className="btn btn-secondary"
+                        disabled={loading}
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => {
-                        const input = document.getElementById(`payment-${assignment.id}`) as HTMLInputElement;
-                        const amount = parseFloat(input?.value || '5');
-                        handleApproveAssignment(assignment.id, amount);
-                      }}
-                      className="btn btn-primary"
-                      disabled={loading}
-                    >
-                      Approve & Pay
-                    </button>
-                    <button
-                      onClick={() => {
-                        const reason = prompt('Reason for rejection (optional):');
-                        if (reason !== null) {
-                          handleRejectAssignment(assignment.id, reason);
-                        }
-                      }}
-                      className="btn btn-secondary"
-                      disabled={loading}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
