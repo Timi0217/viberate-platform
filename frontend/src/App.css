@@ -160,7 +160,7 @@ body {
   padding: 16px 36px;
   font-size: 16px;
   font-weight: 500;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
@@ -197,7 +197,7 @@ body {
   padding: 10px 24px;
   font-size: 15px;
   font-weight: 500;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.1);
@@ -455,7 +455,7 @@ body {
   font-weight: 500;
   background: #007AFF;
   color: white;
-  border-radius: 10px;
+  border-radius: 8px;
   width: auto;
   display: inline-block;
 }
@@ -1119,7 +1119,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
@@ -1185,7 +1185,7 @@ body {
   padding: 12px 24px;
   font-size: 15px;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 8px;
   transition: all 0.2s;
 }
 
