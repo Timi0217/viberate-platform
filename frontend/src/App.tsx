@@ -761,51 +761,83 @@ function App() {
         <>
         {/* Pending Approvals Section */}
         <div className="card" style={{ marginBottom: '24px' }}>
-          <div className="card-header">
-            <div>
-              <h2 className="card-title">Pending Approvals</h2>
-              <p className="card-subtitle">
-                {pendingAssignments.length > 0
-                  ? `Review and approve submitted annotations (${pendingAssignments.length} pending)`
-                  : 'No pending annotations to review at this time'}
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {pendingAssignments.length > 0 && (
-                <>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedAssignments.size === pendingAssignments.length && pendingAssignments.length > 0}
-                      onChange={toggleSelectAll}
-                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                    />
-                    Select All
-                  </label>
-                  {selectedAssignments.size > 0 && (
-                    <button
-                      onClick={handleBatchApprove}
-                      className="btn btn-primary"
-                      disabled={loading}
-                      style={{ whiteSpace: 'nowrap' }}
-                    >
-                      Approve Selected ({selectedAssignments.size})
-                    </button>
-                  )}
-                </>
-              )}
+          <div className="card-header" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 className="card-title">Pending Approvals</h2>
+                <p className="card-subtitle" style={{ marginTop: '4px' }}>
+                  {pendingAssignments.length > 0
+                    ? `${pendingAssignments.length} annotation${pendingAssignments.length > 1 ? 's' : ''} awaiting review`
+                    : 'No pending annotations to review at this time'}
+                </p>
+              </div>
               <button
                 onClick={() => loadPendingAssignments()}
                 className="btn btn-secondary"
                 disabled={loading}
                 style={{ whiteSpace: 'nowrap' }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
                   <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
                 </svg>
                 Refresh
               </button>
             </div>
+
+            {pendingAssignments.length > 0 && (
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'center',
+                padding: '12px 16px',
+                backgroundColor: 'var(--bg-secondary)',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)'
+              }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  margin: 0
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedAssignments.size === pendingAssignments.length && pendingAssignments.length > 0}
+                    onChange={toggleSelectAll}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  Select All ({pendingAssignments.length})
+                </label>
+
+                {selectedAssignments.size > 0 && (
+                  <>
+                    <div style={{
+                      height: '20px',
+                      width: '1px',
+                      backgroundColor: 'var(--border-color)',
+                      margin: '0 4px'
+                    }} />
+                    <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                      {selectedAssignments.size} selected
+                    </span>
+                    <button
+                      onClick={handleBatchApprove}
+                      className="btn btn-primary"
+                      disabled={loading}
+                      style={{ marginLeft: 'auto' }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                      Approve Selected
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
           {pendingAssignments.length > 0 && (
             <div className="card-body">
