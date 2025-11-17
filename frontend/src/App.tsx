@@ -271,11 +271,22 @@ function App() {
   };
 
   const handleSyncProject = async (projectId: number) => {
+    setLoading(true);
+    setError('');
     try {
-      await labelStudioAPI.syncProject(projectId);
-      loadProjects();
+      console.log('Syncing project:', projectId);
+      const result = await labelStudioAPI.syncProject(projectId);
+      console.log('Sync result:', result);
+      await loadProjects();
+      // Show success message
+      alert('Project synced successfully! Task counts updated.');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to sync project');
+      console.error('Sync error:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to sync project';
+      setError(errorMsg);
+      alert(`Sync failed: ${errorMsg}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -872,6 +883,7 @@ function App() {
                               onClick={() => handleSyncProject(project.id)}
                               className="btn btn-secondary btn-sm"
                               title="Sync tasks from Label Studio"
+                              disabled={loading}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
