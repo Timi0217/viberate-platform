@@ -1407,18 +1407,16 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 : '';
 
                             formContent += \`
-                                <div style="margin-bottom: 16px; background-color: var(--vscode-editor-inactiveSelectionBackground); padding: 12px; border-radius: 6px; border-left: 3px solid \${isErrorLabel ? '#dc3545' : 'var(--vscode-focusBorder)'};">
-                                    <label style="display: block; margin-bottom: \${labelDescription ? '6px' : '10px'}; font-weight: 600; font-size: 13px;">\${escapeHtml(label.name)}\${isErrorLabel ? '' : ' (optional)'}:</label>
-                                    \${labelDescription ? \`<div style="font-size: 11px; color: var(--vscode-descriptionForeground); margin-bottom: 10px; font-style: italic;">\${labelDescription}</div>\` : ''}
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px;">\${escapeHtml(label.name)}\${isErrorLabel ? ':' : ' (optional):'}</label>
+                                    \${labelDescription ? \`<div style="font-size: 11px; color: var(--vscode-descriptionForeground); margin-bottom: 8px; font-style: italic;">\${labelDescription}</div>\` : ''}
                                     \${label.options.map(option => \`
-                                        <div style="margin-bottom: 8px;">
-                                            <label style="display: flex; align-items: center; cursor: pointer; padding: 8px; background-color: var(--vscode-input-background); border-radius: 4px; border: 1px solid var(--vscode-input-border); transition: background-color 0.2s;">
-                                                <input type="checkbox" name="\${inputName}" value="\${escapeHtml(option)}"
-                                                       data-control-name="\${escapeHtml(label.name)}"
-                                                       style="margin-right: 10px; width: 16px; height: 16px; cursor: pointer;" />
-                                                <span style="font-size: 13px;">\${escapeHtml(option)}</span>
-                                            </label>
-                                        </div>
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" name="\${inputName}" value="\${escapeHtml(option)}"
+                                                   data-control-name="\${escapeHtml(label.name)}"
+                                                   style="margin-right: 8px;" />
+                                            <span>\${escapeHtml(option)}</span>
+                                        </label>
                                     \`).join('')}
                                 </div>
                             \`;
