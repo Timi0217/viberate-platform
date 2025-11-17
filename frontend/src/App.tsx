@@ -852,7 +852,12 @@ function App() {
             )}
           </div>
           {pendingAssignments.length > 0 && (
-            <div className="card-body">
+            <div className="card-body" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: '16px',
+              padding: '16px'
+            }}>
               {pendingAssignments.map((assignment: any) => {
                 const task = assignment.task_data || assignment.task;
                 const project = projects.find(p => p.id === task?.project);
@@ -864,50 +869,55 @@ function App() {
                   <div key={assignment.id} className="assignment-card" style={{
                     border: `1px solid ${isSelected ? '#0066ff' : 'rgba(0, 0, 0, 0.08)'}`,
                     borderRadius: '6px',
-                    padding: '16px',
-                    marginBottom: '12px',
+                    padding: '14px',
                     backgroundColor: isSelected ? 'rgba(0, 102, 255, 0.04)' : 'white',
                     transition: 'all 0.15s ease',
-                    boxShadow: isSelected ? '0 2px 8px rgba(0, 102, 255, 0.1)' : 'none'
+                    boxShadow: isSelected ? '0 2px 8px rgba(0, 102, 255, 0.1)' : 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%'
                   }}>
                     {/* Header with checkbox */}
-                    <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleAssignmentSelection(assignment.id)}
-                          style={{ width: '17px', height: '17px', cursor: 'pointer' }}
+                          style={{ width: '16px', height: '16px', cursor: 'pointer', flexShrink: 0 }}
                         />
-                        <div>
-                          <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '3px' }}>
-                            Assignment #{assignment.id}
-                          </div>
-                          <div style={{ fontSize: '13px', color: '#666' }}>
-                            {assignment.task_data?.project_title || 'Unknown Project'} • <span style={{ fontWeight: '500', color: '#0066ff' }}>${defaultPrice.toFixed(2)}</span>
-                          </div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                          Assignment #{assignment.id}
                         </div>
                       </div>
-                      <div style={{ fontSize: '12px', color: '#999', textAlign: 'right' }}>
-                        {assignment.submitted_at ? new Date(assignment.submitted_at).toLocaleString() : 'Unknown'}
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
+                        {assignment.task_data?.project_title || 'Unknown Project'}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#0066ff' }}>
+                          ${defaultPrice.toFixed(2)}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#999' }}>
+                          {assignment.submitted_at ? new Date(assignment.submitted_at).toLocaleDateString() : 'Unknown'}
+                        </span>
                       </div>
                     </div>
 
                     {/* Task Data */}
                     {(taskData.image || taskData.text) && (
-                      <div style={{ marginBottom: '12px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px', border: '1px solid rgba(0, 0, 0, 0.06)' }}>
-                        <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Task Data
+                      <div style={{ marginBottom: '10px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', border: '1px solid rgba(0, 0, 0, 0.06)' }}>
+                        <div style={{ fontSize: '10px', fontWeight: '600', marginBottom: '6px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Task
                         </div>
                         {taskData.image && (
                           <img
                             src={taskData.image}
                             alt="Task"
-                            style={{ maxWidth: '250px', maxHeight: '180px', borderRadius: '4px', marginBottom: taskData.text ? '6px' : '0' }}
+                            style={{ width: '100%', height: 'auto', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: taskData.text ? '6px' : '0' }}
                           />
                         )}
                         {taskData.text && (
-                          <div style={{ fontSize: '13px', color: '#555', lineHeight: '1.5' }}>
+                          <div style={{ fontSize: '12px', color: '#555', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                             "{taskData.text}"
                           </div>
                         )}
@@ -915,19 +925,19 @@ function App() {
                     )}
 
                     {/* Annotation Result - Formatted */}
-                    <div style={{ marginBottom: '12px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px', border: '1px solid rgba(0, 0, 0, 0.06)' }}>
-                      <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div style={{ marginBottom: '10px', padding: '8px', backgroundColor: '#f8f9fa', borderRadius: '4px', border: '1px solid rgba(0, 0, 0, 0.06)', flex: 1 }}>
+                      <div style={{ fontSize: '10px', fontWeight: '600', marginBottom: '6px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         Annotation
                       </div>
                       {(() => {
                         const result = assignment.annotation_result;
-                        if (!result) return <div style={{ fontSize: '13px', color: '#999' }}>No result</div>;
+                        if (!result) return <div style={{ fontSize: '12px', color: '#999' }}>No result</div>;
 
                         // Format the result in a readable way
                         return (
-                          <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
+                          <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
                             {Object.entries(result).map(([key, value]) => (
-                              <div key={key} style={{ marginBottom: '4px' }}>
+                              <div key={key} style={{ marginBottom: '3px' }}>
                                 <span style={{ fontWeight: '600', textTransform: 'capitalize', color: '#333' }}>{key}:</span>{' '}
                                 <span style={{ color: '#555' }}>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
                               </div>
@@ -938,12 +948,12 @@ function App() {
                     </div>
 
                     {/* Individual Actions */}
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: 'auto' }}>
                       <button
                         onClick={() => handleApproveAssignment(assignment.id, defaultPrice)}
                         disabled={loading}
                         style={{
-                          padding: '6px 12px',
+                          padding: '8px 12px',
                           fontSize: '13px',
                           fontWeight: '500',
                           backgroundColor: '#0066ff',
@@ -952,7 +962,8 @@ function App() {
                           borderRadius: '4px',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
-                          opacity: loading ? 0.6 : 1
+                          opacity: loading ? 0.6 : 1,
+                          width: '100%'
                         }}
                         onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#0052cc')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#0066ff')}
@@ -969,18 +980,19 @@ function App() {
                         disabled={loading}
                         style={{
                           padding: '6px 12px',
-                          fontSize: '13px',
+                          fontSize: '12px',
                           fontWeight: '500',
-                          backgroundColor: 'white',
-                          color: '#666',
-                          border: '1px solid rgba(0, 0, 0, 0.12)',
+                          backgroundColor: 'transparent',
+                          color: '#999',
+                          border: 'none',
                           borderRadius: '4px',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
-                          opacity: loading ? 0.6 : 1
+                          opacity: loading ? 0.6 : 1,
+                          width: '100%'
                         }}
-                        onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                        onMouseEnter={(e) => !loading && (e.currentTarget.style.color = '#666')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = '#999')}
                       >
                         Reject
                       </button>
