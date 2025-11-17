@@ -324,7 +324,10 @@ function App() {
       console.log('Loading pending assignments...');
       const data = await assignmentsAPI.list('submitted');
       console.log('Pending assignments response:', data);
-      setPendingAssignments(Array.isArray(data) ? data : []);
+      // Handle both paginated response {results: [...]} and direct array
+      const assignments = Array.isArray(data) ? data : (data.results || []);
+      console.log('Extracted assignments:', assignments);
+      setPendingAssignments(assignments);
     } catch (err: any) {
       console.error('Failed to load pending assignments:', err);
       setPendingAssignments([]);
