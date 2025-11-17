@@ -1,0 +1,103 @@
+{
+  "name": "viberate",
+  "displayName": "Viberate",
+  "description": "Earn USDC while coding by completing annotation tasks in your idle time",
+  "version": "0.1.0",
+  "publisher": "viberate",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "viberate.login",
+        "title": "Viberate: Login"
+      },
+      {
+        "command": "viberate.register",
+        "title": "Viberate: Create Account"
+      },
+      {
+        "command": "viberate.logout",
+        "title": "Viberate: Logout"
+      },
+      {
+        "command": "viberate.refreshTasks",
+        "title": "Viberate: Refresh Tasks"
+      },
+      {
+        "command": "viberate.openSettings",
+        "title": "Viberate: Open Settings"
+      },
+      {
+        "command": "viberate.connectWallet",
+        "title": "Viberate: Connect Wallet"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "viberate-sidebar",
+          "title": "Viberate",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "viberate-sidebar": [
+        {
+          "type": "webview",
+          "id": "viberate.taskPanel",
+          "name": ""
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Viberate Annotator",
+      "properties": {
+        "viberate.apiUrl": {
+          "type": "string",
+          "default": "https://django-production-3340.up.railway.app",
+          "description": "Viberate API base URL"
+        },
+        "viberate.autoAcceptTasks": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically accept and show tasks when idle"
+        },
+        "viberate.idleTimeSeconds": {
+          "type": "number",
+          "default": 5,
+          "description": "Seconds of inactivity before showing annotation tasks"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "typescript": "^5.1.6",
+    "@vscode/vsce": "^2.19.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
+  }
+}
