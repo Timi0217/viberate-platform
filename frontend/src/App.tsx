@@ -44,6 +44,7 @@ function App() {
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [pendingAssignments, setPendingAssignments] = useState<any[]>([]);
   const [selectedAssignments, setSelectedAssignments] = useState<Set<number>>(new Set());
+  const [isPendingApprovalsExpanded, setIsPendingApprovalsExpanded] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean;
     title: string;
@@ -761,97 +762,122 @@ function App() {
         <>
         {/* Pending Approvals Section */}
         <div className="card" style={{ marginBottom: '24px' }}>
-          <div className="card-header" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '16px' }}>
+          <div
+            className="card-header"
+            style={{
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+            onClick={() => setIsPendingApprovalsExpanded(!isPendingApprovalsExpanded)}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2 className="card-title">Pending Approvals</h2>
-                <p className="card-subtitle" style={{ marginTop: '4px' }}>
-                  {pendingAssignments.length > 0
-                    ? `${pendingAssignments.length} annotation${pendingAssignments.length > 1 ? 's' : ''} awaiting review`
-                    : 'No pending annotations to review at this time'}
-                </p>
-              </div>
-              <button
-                onClick={() => loadPendingAssignments()}
-                className="btn btn-secondary"
-                disabled={loading}
-                style={{ whiteSpace: 'nowrap' }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
-                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  style={{
+                    transition: 'transform 0.2s ease',
+                    transform: isPendingApprovalsExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
+                  }}
+                >
+                  <path d="M9 18l6-6-6-6"/>
                 </svg>
-                Refresh
-              </button>
-            </div>
+                <div>
+                  <h2 className="card-title">Pending Approvals</h2>
+                  <p className="card-subtitle" style={{ marginTop: '4px' }}>
+                    {pendingAssignments.length > 0
+                      ? `${pendingAssignments.length} annotation${pendingAssignments.length > 1 ? 's' : ''} awaiting review`
+                      : 'No pending annotations to review at this time'}
+                  </p>
+                </div>
+              </div>
 
-            {pendingAssignments.length > 0 && (
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                alignItems: 'center',
-                padding: '10px 14px',
-                backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                borderRadius: '4px',
-                border: '1px solid rgba(0, 0, 0, 0.06)'
-              }}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  margin: 0,
-                  color: 'var(--text-primary)'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedAssignments.size === pendingAssignments.length && pendingAssignments.length > 0}
-                    onChange={toggleSelectAll}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                  />
-                  <span>Select All</span>
-                  <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}>({pendingAssignments.length})</span>
-                </label>
-
-                {selectedAssignments.size > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} onClick={(e) => e.stopPropagation()}>
+                {pendingAssignments.length > 0 && isPendingApprovalsExpanded && (
                   <>
-                    <div style={{ flex: 1 }} />
-                    <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                      {selectedAssignments.size} selected
-                    </span>
-                    <button
-                      onClick={handleBatchApprove}
-                      disabled={loading}
-                      style={{
-                        padding: '6px 14px',
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        backgroundColor: '#0066ff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.15s ease',
-                        opacity: loading ? 0.6 : 1
-                      }}
-                      onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#0052cc')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#0066ff')}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M20 6L9 17l-5-5"/>
-                      </svg>
-                      Approve Selected
-                    </button>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      margin: 0
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedAssignments.size === pendingAssignments.length && pendingAssignments.length > 0}
+                        onChange={toggleSelectAll}
+                        style={{ width: '15px', height: '15px', cursor: 'pointer' }}
+                      />
+                      <span>Select All</span>
+                    </label>
+
+                    {selectedAssignments.size > 0 && (
+                      <button
+                        onClick={handleBatchApprove}
+                        disabled={loading}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          backgroundColor: '#0066ff',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease',
+                          opacity: loading ? 0.6 : 1
+                        }}
+                        onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#0052cc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#0066ff')}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                        Approve ({selectedAssignments.size})
+                      </button>
+                    )}
                   </>
                 )}
+
+                <button
+                  onClick={() => loadPendingAssignments()}
+                  disabled={loading}
+                  style={{
+                    padding: '6px 10px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    backgroundColor: 'transparent',
+                    color: '#666',
+                    border: '1px solid rgba(0, 0, 0, 0.12)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.15s ease',
+                    opacity: loading ? 0.6 : 1
+                  }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                  </svg>
+                  Refresh
+                </button>
               </div>
-            )}
+            </div>
           </div>
-          {pendingAssignments.length > 0 && (
+          {pendingAssignments.length > 0 && isPendingApprovalsExpanded && (
             <div className="card-body" style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
