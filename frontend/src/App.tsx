@@ -321,9 +321,12 @@ function App() {
 
   const loadPendingAssignments = async () => {
     try {
+      console.log('Loading pending assignments...');
       const data = await assignmentsAPI.list('submitted');
+      console.log('Pending assignments response:', data);
       setPendingAssignments(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Failed to load pending assignments:', err);
       setPendingAssignments([]);
     }
   };
@@ -677,14 +680,29 @@ function App() {
       {user?.user_type === 'researcher' ? (
         <>
         {/* Pending Approvals Section */}
-        {pendingAssignments.length > 0 && (
-          <div className="card" style={{ marginBottom: '24px' }}>
-            <div className="card-header">
-              <div>
-                <h2 className="card-title">Pending Approvals</h2>
-                <p className="card-subtitle">Review and approve submitted annotations ({pendingAssignments.length} pending)</p>
-              </div>
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <div className="card-header">
+            <div>
+              <h2 className="card-title">Pending Approvals</h2>
+              <p className="card-subtitle">
+                {pendingAssignments.length > 0
+                  ? `Review and approve submitted annotations (${pendingAssignments.length} pending)`
+                  : 'No pending annotations to review at this time'}
+              </p>
             </div>
+            <button
+              onClick={() => loadPendingAssignments()}
+              className="btn btn-secondary"
+              disabled={loading}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
+          {pendingAssignments.length > 0 && (
             <div className="card-body">
               {pendingAssignments.map((assignment: any) => (
                 <div key={assignment.id} className="assignment-card" style={{
@@ -697,13 +715,13 @@ function App() {
                   <div style={{ marginBottom: '12px' }}>
                     <strong>Assignment #{assignment.id}</strong>
                     <span style={{ marginLeft: '12px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                      Task: {assignment.task?.title || `Task #${assignment.task_id}`}
+                      Task: {assignment.task_data?.project_title || 'Unknown Project'}
                     </span>
                   </div>
                   <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }}>
                     <strong>Annotation Result:</strong>
                     <pre style={{ marginTop: '8px', fontSize: '12px', overflow: 'auto', maxHeight: '200px' }}>
-                      {JSON.stringify(assignment.result, null, 2)}
+                      {JSON.stringify(assignment.annotation_result, null, 2)}
                     </pre>
                   </div>
                   <div style={{ marginBottom: '12px' }}>
@@ -760,8 +778,8 @@ function App() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Projects Section */}
         <div className="card">
