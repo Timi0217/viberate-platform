@@ -947,7 +947,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 labels: [],
                                 header: null,  // Will store Header value
                                 hasImage: configStr.indexOf('<Image') !== -1,
-                                hasText: configStr.indexOf('<Text') !== -1 && configStr.indexOf('name="source"') === -1 && configStr.indexOf('name="mt"') === -1,
+                                // Check for <Text (with space or >) to avoid matching <TextArea>
+                                hasText: (configStr.indexOf('<Text ') !== -1 || configStr.indexOf('<Text>') !== -1) && configStr.indexOf('name="source"') === -1 && configStr.indexOf('name="mt"') === -1,
                                 hasSourceMT: configStr.indexOf('name="source"') !== -1 && configStr.indexOf('name="mt"') !== -1
                             };
 
