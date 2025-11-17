@@ -1407,7 +1407,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 : '';
 
                             formContent += \`
-                                <div style="margin-bottom: 16px; background-color: var(--vscode-editor-inactiveSelectionBackground); padding: 12px; border-radius: 6px; border-left: 3px solid \${isErrorLabel ? '#dc3545' : 'var(--vscode-focusBorder)'};">
+                                <div style="margin-bottom: 16px; background-color: var(--vscode-editor-inactiveSelectionBackground); padding: 12px; border-radius: 6px;">
                                     <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px;">\${escapeHtml(label.name)}\${isErrorLabel ? ':' : ' (optional):'}</label>
                                     \${labelDescription ? \`<div style="font-size: 11px; color: var(--vscode-descriptionForeground); margin-bottom: 8px; font-style: italic;">\${labelDescription}</div>\` : ''}
                                     \${label.options.map(option => \`
