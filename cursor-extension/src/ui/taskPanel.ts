@@ -741,16 +741,9 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         const pricePerTask = task.price_per_task ? parseFloat(task.price_per_task).toFixed(2) : '0.00';
                         const projectTitle = task.project_title || 'Unknown Project';
 
-                        // Extract and display media (images/videos)
+                        // Don't display media at the top - it will be shown in the form
+                        // This prevents duplicate image display
                         let mediaHtml = '';
-                        const imageUrl = taskData.image || taskData.img || taskData.url || taskData.image_url;
-                        if (imageUrl) {
-                            mediaHtml = \`
-                                <div style="margin: 12px 0;">
-                                    <img src="\${escapeHtml(imageUrl)}" style="max-width: 100%; border-radius: 4px; border: 1px solid var(--vscode-input-border);" alt="Task image" />
-                                </div>
-                            \`;
-                        }
 
                         // Extract text content
                         let textContent = '';
@@ -793,16 +786,9 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         const status = assignment.status;
                         const taskData = task.data || {};
 
-                        // Extract and display media (images/videos)
+                        // Don't display media at the top - it will be shown in the form
+                        // This prevents duplicate image display
                         let mediaHtml = '';
-                        const imageUrl = taskData.image || taskData.img || taskData.url || taskData.image_url;
-                        if (imageUrl) {
-                            mediaHtml = \`
-                                <div style="margin: 12px 0;">
-                                    <img src="\${escapeHtml(imageUrl)}" style="max-width: 100%; border-radius: 4px; border: 1px solid var(--vscode-input-border);" alt="Task image" />
-                                </div>
-                            \`;
-                        }
 
                         let actionButton = '';
                         let annotationForm = '';
@@ -1306,12 +1292,6 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     </div>
                                 \` : ''}
 
-                                \${text ? \`
-                                    <div style="margin-bottom: 16px; padding: 12px; background-color: var(--vscode-editor-inactiveSelectionBackground); border-radius: 4px;">
-                                        <div style="font-size: 13px; line-height: 1.5;">\${escapeHtml(text)}</div>
-                                    </div>
-                                \` : ''}
-
                                 <div style="margin-bottom: 16px;">
                                     <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Your Annotation:</label>
                                     <textarea
@@ -1365,14 +1345,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             \`;
                         }
 
-                        // Display text if present (but not source/MT which are already shown)
-                        if (controls.hasText && taskData.text) {
-                            formContent += \`
-                                <div style="margin-bottom: 16px; padding: 12px; background-color: var(--vscode-editor-inactiveSelectionBackground); border-radius: 4px;">
-                                    <div style="font-size: 13px; line-height: 1.5;">\${escapeHtml(taskData.text)}</div>
-                                </div>
-                            \`;
-                        }
+                        // Don't display taskData.text - it's often irrelevant data
+                        // The actual annotation controls (TextArea, etc.) will handle user input
 
                         // Render Choices (radio or checkboxes)
                         controls.choices.forEach((choice, idx) => {
