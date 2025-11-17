@@ -883,6 +883,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                     textAreas: [],
                                     ratings: [],
                                     labels: [],
+                                    header: null,
                                     hasImage: false,
                                     hasText: false,
                                     hasSourceMT: false
@@ -925,10 +926,21 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 textAreas: [],
                                 ratings: [],
                                 labels: [],
+                                header: null,  // Will store Header value
                                 hasImage: configStr.indexOf('<Image') !== -1,
                                 hasText: configStr.indexOf('<Text') !== -1 && configStr.indexOf('name="source"') === -1 && configStr.indexOf('name="mt"') === -1,
                                 hasSourceMT: configStr.indexOf('name="source"') !== -1 && configStr.indexOf('name="mt"') !== -1
                             };
+
+                            // Extract Header value
+                            try {
+                                const headerMatch = configStr.match(/<Header[^>]*value="([^"]+)"/);
+                                if (headerMatch && headerMatch[1]) {
+                                    controls.header = headerMatch[1];
+                                }
+                            } catch (e) {
+                                console.warn('[parseLabelConfig] Failed to parse Header:', e);
+                            }
 
                             // Extract Choices elements
                             try {
@@ -1316,6 +1328,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         // Build form dynamically based on parsed Label Studio controls
                         let formContent = '';
 
+                        // Display Header instruction if present
+                        if (controls.header) {
+                            formContent += \`
+                                <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 600;">\${escapeHtml(controls.header)}</h4>
+                            \`;
+                        }
+
                         // Display Source/MT side by side if it's an MT evaluation task
                         if (controls.hasSourceMT && taskData.source && taskData.mt) {
                             formContent += \`
@@ -1345,8 +1364,16 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             \`;
                         }
 
-                        // Don't display taskData.text - it's often irrelevant data
-                        // The actual annotation controls (TextArea, etc.) will handle user input
+                        // Display text if present and relevant (like image descriptions)
+                        // Show text for image classification tasks or when label_config references it
+                        const shouldShowText = controls.hasImage || controls.hasText;
+                        if (shouldShowText && taskData.text) {
+                            formContent += \`
+                                <div style="margin-bottom: 16px; padding: 12px; background-color: var(--vscode-editor-inactiveSelectionBackground); border-radius: 4px;">
+                                    <div style="font-size: 13px; line-height: 1.5;">\${escapeHtml(taskData.text)}</div>
+                                </div>
+                            \`;
+                        }
 
                         // Render Choices (radio or checkboxes)
                         controls.choices.forEach((choice, idx) => {
