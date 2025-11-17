@@ -1383,10 +1383,9 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             \`;
                         }
 
-                        // Display text if present and relevant (like image descriptions)
-                        // Show text for image classification tasks or when label_config references it
-                        const shouldShowText = controls.hasImage || controls.hasText;
-                        if (shouldShowText && taskData.text) {
+                        // ONLY display text if label_config has a <Text> element
+                        // Don't show random taskData.text for image-only tasks
+                        if (controls.hasText && taskData.text) {
                             formContent += \`
                                 <div style="margin-bottom: 16px; padding: 12px; background-color: var(--vscode-editor-inactiveSelectionBackground); border-radius: 4px;">
                                     <div style="font-size: 13px; line-height: 1.5;">\${escapeHtml(taskData.text)}</div>
