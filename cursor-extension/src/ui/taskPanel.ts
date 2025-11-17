@@ -641,6 +641,30 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         // Event delegation for task and assignment actions
                         app.addEventListener('click', (e) => {
                             let target = e.target;
+
+                            // Handle star rating clicks
+                            if (target.classList && target.classList.contains('star')) {
+                                const radioInput = target.previousElementSibling;
+                                if (radioInput && radioInput.type === 'radio') {
+                                    radioInput.checked = true;
+                                    // Update all stars in this rating group to show selection
+                                    const ratingContainer = target.closest('div[style*="display: flex"]');
+                                    if (ratingContainer) {
+                                        const allStars = ratingContainer.querySelectorAll('.star');
+                                        const selectedValue = parseInt(target.dataset.value);
+                                        allStars.forEach(star => {
+                                            const starValue = parseInt(star.dataset.value);
+                                            if (starValue <= selectedValue) {
+                                                star.style.color = '#ffd700';  // gold
+                                            } else {
+                                                star.style.color = '#ccc';  // gray
+                                            }
+                                        });
+                                    }
+                                }
+                                return;
+                            }
+
                             // Walk up the DOM tree to find the button with data-action
                             while (target && target !== app) {
                                 if (target.dataset && target.dataset.action) {
@@ -1376,16 +1400,23 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         controls.labels.forEach((label, idx) => {
                             const inputName = \`\${label.name}-\${assignment.id}\`;
 
+                            // Determine if this is an error-marking checkbox
+                            const isErrorLabel = label.name.toLowerCase().includes('error');
+                            const labelDescription = isErrorLabel
+                                ? 'Mark this if the translation contains critical errors or mistakes'
+                                : '';
+
                             formContent += \`
-                                <div style="margin-bottom: 16px;">
-                                    <label style="display: block; margin-bottom: 10px; font-weight: 600; font-size: 13px;">\${escapeHtml(label.name)} (optional):</label>
+                                <div style="margin-bottom: 16px; background-color: var(--vscode-editor-inactiveSelectionBackground); padding: 12px; border-radius: 6px; border-left: 3px solid \${isErrorLabel ? '#dc3545' : 'var(--vscode-focusBorder)'};">
+                                    <label style="display: block; margin-bottom: \${labelDescription ? '6px' : '10px'}; font-weight: 600; font-size: 13px;">\${escapeHtml(label.name)}\${isErrorLabel ? '' : ' (optional)'}:</label>
+                                    \${labelDescription ? \`<div style="font-size: 11px; color: var(--vscode-descriptionForeground); margin-bottom: 10px; font-style: italic;">\${labelDescription}</div>\` : ''}
                                     \${label.options.map(option => \`
                                         <div style="margin-bottom: 8px;">
-                                            <label style="display: flex; align-items: center; cursor: pointer; padding: 8px;">
+                                            <label style="display: flex; align-items: center; cursor: pointer; padding: 8px; background-color: var(--vscode-input-background); border-radius: 4px; border: 1px solid var(--vscode-input-border); transition: background-color 0.2s;">
                                                 <input type="checkbox" name="\${inputName}" value="\${escapeHtml(option)}"
                                                        data-control-name="\${escapeHtml(label.name)}"
-                                                       style="margin-right: 8px;" />
-                                                <span>\${escapeHtml(option)}</span>
+                                                       style="margin-right: 10px; width: 16px; height: 16px; cursor: pointer;" />
+                                                <span style="font-size: 13px;">\${escapeHtml(option)}</span>
                                             </label>
                                         </div>
                                     \`).join('')}
@@ -1401,21 +1432,36 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 stars.push(i);
                             }
 
+                            // Star rating rubric (matches Label Studio's MT evaluation rubric)
+                            const rubricItems = [
+                                { stars: 1, label: 'Catastrophic', color: '#dc3545', description: 'Incomprehensible or life-threatening mistakes' },
+                                { stars: 2, label: 'Inadequate', color: '#fd7e14', description: 'Hard to understand or use, unreliable' },
+                                { stars: 3, label: 'Passable', color: '#ffc107', description: 'Overall comprehensible but not fluent' },
+                                { stars: 4, label: 'Good', color: '#28a745', description: 'Meaning present and fluent, few minor errors' },
+                                { stars: 5, label: 'Perfect', color: '#20c997', description: 'No errors, native fluency' }
+                            ];
+
                             formContent += \`
                                 <div style="margin-bottom: 16px;">
                                     <label style="display: block; margin-bottom: 10px; font-weight: 600; font-size: 13px;">\${escapeHtml(rating.name)}\${rating.required ? ' *' : ''}:</label>
-                                    <div style="display: flex; gap: 8px;">
+                                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                                         \${stars.map(star => \`
                                             <label style="cursor: pointer; font-size: 24px;">
                                                 <input type="radio" name="\${ratingName}" value="\${star}"
                                                        data-control-name="\${escapeHtml(rating.name)}"
                                                        style="display: none;" />
-                                                <span class="star" data-value="\${star}">★</span>
+                                                <span class="star" data-value="\${star}" style="cursor: pointer; color: #ccc; transition: color 0.2s;">★</span>
                                             </label>
                                         \`).join('')}
                                     </div>
-                                    <div style="font-size: 11px; color: var(--vscode-descriptionForeground); margin-top: 4px;">
-                                        1 = worst, \${rating.maxRating} = best
+                                    <div style="background-color: var(--vscode-editor-inactiveSelectionBackground); padding: 12px; border-radius: 6px; font-size: 11px;">
+                                        \${rubricItems.map(item => \`
+                                            <div style="display: flex; align-items: baseline; margin-bottom: 6px; line-height: 1.4;">
+                                                <span style="color: \${item.color}; font-weight: 600; min-width: 20px; margin-right: 4px;">\${'★'.repeat(item.stars)}</span>
+                                                <span style="font-weight: 600; color: \${item.color}; margin-right: 6px;">\${item.label}:</span>
+                                                <span style="color: var(--vscode-descriptionForeground);">\${item.description}</span>
+                                            </div>
+                                        \`).join('')}
                                     </div>
                                 </div>
                             \`;
