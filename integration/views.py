@@ -150,12 +150,17 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
         tasks_updated = 0
 
         for ls_task in sync_data['tasks']:
+            # Determine status based on Label Studio annotations
+            # If task has annotations, it's completed in Label Studio
+            has_annotations = bool(ls_task.get('annotations'))
+            task_status = 'completed' if has_annotations else 'available'
+
             task, created = Task.objects.update_or_create(
                 project=project,
                 labelstudio_task_id=ls_task['id'],
                 defaults={
                     'data': ls_task.get('data', {}),
-                    'status': 'available'
+                    'status': task_status
                 }
             )
             if created:
