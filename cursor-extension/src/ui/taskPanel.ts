@@ -484,15 +484,20 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     .assignment-collapsible .assignment-details {
                         max-height: 0;
                         overflow: hidden;
+                        padding: 0 !important;
+                        transition: max-height 0.3s ease-out, padding 0.3s ease-out;
                     }
                     .assignment-collapsible.expanded .assignment-details {
                         max-height: 5000px;
+                        padding: 0 16px 16px 16px !important;
                     }
                     .assignment-collapsible.expanded .chevron {
                         transform: rotate(0deg);
+                        transition: transform 0.2s ease;
                     }
                     .assignment-collapsible:not(.expanded) .chevron {
                         transform: rotate(-90deg);
+                        transition: transform 0.2s ease;
                     }
                 </style>
             </head>
@@ -619,14 +624,15 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         if (myAssignments && myAssignments.length > 0) {
                             console.log('Rendering MY ASSIGNMENTS section with', myAssignments.length, 'assignments');
                             html += \`
-                                <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px; max-height: 400px; overflow-y: auto;">
+                                <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                                     <h2 style="margin: 0 0 12px 0;">My Tasks</h2>
+                                    <div style="max-height: 150px; overflow-y: auto; overflow-x: hidden;">
                             \`;
                             myAssignments.forEach(assignment => {
                                 console.log('Rendering assignment:', assignment);
                                 html += renderAssignmentCard(assignment);
                             });
-                            html += '</div>';
+                            html += '</div></div>'; // Close both the scrollable div and my-assignments-section
                         } else {
                             console.log('NO ASSIGNMENTS TO RENDER - myAssignments:', myAssignments);
                         }
@@ -634,6 +640,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         // Available projects section
                         html += '<div class="section-divider"></div>';
                         html += '<h2>Available Tasks</h2>';
+                        html += '<div style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">';
                         if (availableProjects && availableProjects.length > 0) {
                             console.log('Available projects received:', availableProjects.length, availableProjects);
 
@@ -650,6 +657,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                 </div>
                             \`;
                         }
+                        html += '</div>';
 
                         app.innerHTML = html;
 
@@ -679,6 +687,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         // Event delegation for task and assignment actions
                         app.addEventListener('click', (e) => {
                             let target = e.target;
+                            console.log('[Event] Click detected on:', target);
 
                             // Handle star rating clicks
                             if (target.classList && target.classList.contains('star')) {
@@ -704,51 +713,61 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             }
 
                             // Walk up the DOM tree to find the button with data-action
+                            // Handle SVG elements specially (they might not have dataset)
                             while (target && target !== app) {
-                                if (target.dataset && target.dataset.action) {
-                                    const action = target.dataset.action;
+                                // For SVG elements, check the parent
+                                const tagName = target.tagName ? target.tagName.toLowerCase() : '';
+                                const elementToCheck = (tagName === 'svg' || tagName === 'path') ? target.parentElement : target;
+
+                                if (elementToCheck && elementToCheck.dataset && elementToCheck.dataset.action) {
+                                    const action = elementToCheck.dataset.action;
+                                    console.log('[Event] Action clicked:', action, 'Target:', elementToCheck);
                                     if (action === 'claim-task') {
-                                        claimTask(parseInt(target.dataset.taskId));
+                                        claimTask(parseInt(elementToCheck.dataset.taskId));
                                         return;
                                     } else if (action === 'claim-task-from-project') {
-                                        claimTaskFromProject(parseInt(target.dataset.projectId));
+                                        claimTaskFromProject(parseInt(elementToCheck.dataset.projectId));
                                         return;
                                     } else if (action === 'start-assignment') {
-                                        startAssignment(parseInt(target.dataset.assignmentId));
+                                        startAssignment(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'submit-assignment') {
-                                        submitAssignment(parseInt(target.dataset.assignmentId));
+                                        submitAssignment(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'submit-mt-evaluation') {
-                                        submitMTEvaluation(parseInt(target.dataset.assignmentId));
+                                        submitMTEvaluation(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'submit-generic-annotation') {
-                                        submitGenericAnnotation(parseInt(target.dataset.assignmentId));
+                                        submitGenericAnnotation(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'submit-dynamic') {
-                                        submitDynamic(parseInt(target.dataset.assignmentId));
+                                        submitDynamic(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'submit-classification') {
-                                        submitClassification(parseInt(target.dataset.assignmentId));
+                                        submitClassification(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'cancel-assignment') {
-                                        cancelAssignment(parseInt(target.dataset.assignmentId));
+                                        cancelAssignment(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'validate-json') {
-                                        validateJSON(parseInt(target.dataset.assignmentId));
+                                        validateJSON(parseInt(elementToCheck.dataset.assignmentId));
                                         return;
                                     } else if (action === 'toggle-task') {
                                         // Find the task card (parent element)
-                                        const taskCard = target.closest('.task-card');
+                                        const taskCard = elementToCheck.closest('.task-card');
                                         if (taskCard) {
                                             taskCard.classList.toggle('expanded');
                                         }
                                         return;
                                     } else if (action === 'toggle-assignment') {
+                                        console.log('[Event] Toggling assignment');
                                         // Find the assignment card (parent element)
-                                        const assignmentCard = target.closest('.assignment-collapsible');
+                                        const assignmentCard = elementToCheck.closest('.assignment-collapsible');
+                                        console.log('[Event] Found assignment card:', assignmentCard);
                                         if (assignmentCard) {
+                                            console.log('[Event] Current classes:', assignmentCard.className);
                                             assignmentCard.classList.toggle('expanded');
+                                            console.log('[Event] New classes:', assignmentCard.className);
                                         }
                                         return;
                                     }
@@ -764,7 +783,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                         return \`
                             <div class="task-card" style="overflow: visible;">
-                                <div style="display: flex; justify-content: space-between; align-items: stretch; padding: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;">
                                     <button data-action="claim-task-from-project" data-project-id="\${project.id}" style="flex: 0 0 auto; width: 200px; margin: 0; padding: 10px 16px; height: auto; min-height: 40px; display: flex; align-items: center; justify-content: center;">Claim Task</button>
                                     <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; margin-left: auto; padding-left: 12px; gap: 2px;">
                                         <div style="font-size: 16px; font-weight: 600; color: #2ea043; white-space: nowrap; line-height: 1;">$\${pricePerTask}</div>
@@ -844,7 +863,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             // All newly claimed tasks are automatically started (in_progress status)
                             annotationForm = renderAnnotationForm(assignment);
                         } else if (status === 'submitted') {
-                            actionButton = '<p style="margin: 0; font-size: 12px; color: #bf8700; line-height: 1.4;">⏳ Waiting for approval</p>';
+                            actionButton = '<p style="margin: 0; font-size: 12px; color: #bf8700; line-height: 1.4;">Waiting for approval</p>';
                         } else if (status === 'approved') {
                             // No message needed for approved - badge says it all
                             actionButton = '';
@@ -856,24 +875,24 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         const projectTitle = task.project_title || 'Unknown Project';
                         const pricePerTask = task.price_per_task ? parseFloat(task.price_per_task).toFixed(2) : '0.00';
 
-                        // For in_progress assignments, make them collapsible
+                        // For in_progress assignments, make them collapsible (default collapsed)
                         if (isInProgress) {
                             return \`
-                                <div class="task-card assignment-collapsible expanded" data-assignment-id="\${assignment.id}" style="padding: 16px;">
+                                <div class="task-card assignment-collapsible" data-assignment-id="\${assignment.id}">
                                     <div
                                         data-action="toggle-assignment"
                                         data-assignment-id="\${assignment.id}"
-                                        style="cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; padding: 8px 0;"
+                                        style="cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;"
                                     >
                                         <div style="display: flex; align-items: center; gap: 10px;">
-                                            <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" class="chevron" style="transition: transform 0.2s; flex-shrink: 0;">
+                                            <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" class="chevron" style="flex-shrink: 0;">
                                                 <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
                                             <span class="badge \${status}" style="margin: 0;">\${escapeHtml(status)}</span>
                                         </div>
                                         <span style="font-size: 16px; font-weight: 600; color: #2ea043; line-height: 1;">$\${pricePerTask}</span>
                                     </div>
-                                    <div class="assignment-details" style="overflow: hidden; transition: max-height 0.3s ease-out;">
+                                    <div class="assignment-details">
                                         \${mediaHtml}
                                         \${annotationForm}
                                         \${cancelButton}
@@ -883,23 +902,28 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         }
 
                         // For other statuses, render minimal compact format
-                        // Add icon for approved status to maintain alignment with in_progress chevron
-                        const statusIcon = status === 'approved'
-                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0; color: #2ea043;"><path d="M20 6L9 17l-5-5"/></svg>'
-                            : '<div style="width: 14px; flex-shrink: 0;"></div>';
+                        // Add icon for each status to maintain alignment
+                        let statusIcon;
+                        if (status === 'approved') {
+                            statusIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0; color: #2ea043;"><path d="M20 6L9 17l-5-5"/></svg>';
+                        } else if (status === 'submitted') {
+                            statusIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; color: #bf8700;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+                        } else {
+                            statusIcon = '<div style="width: 14px; flex-shrink: 0;"></div>';
+                        }
 
                         return \`
-                            <div class="task-card" style="padding: 16px;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
+                            <div class="task-card">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         \${statusIcon}
                                         <span class="badge \${status}" style="margin: 0;">\${escapeHtml(status)}</span>
                                     </div>
                                     <span style="font-size: 16px; font-weight: 600; color: #2ea043; line-height: 1;">$\${pricePerTask}</span>
                                 </div>
-                                \${actionButton ? \`<div style="margin-top: 8px;">\${actionButton}</div>\` : ''}
+                                \${actionButton ? \`<div style="padding: 0 16px 12px 16px;">\${actionButton}</div>\` : ''}
                                 \${mediaHtml}
-                                \${cancelButton}
+                                \${cancelButton ? \`<div style="padding: 0 16px 12px 16px;">\${cancelButton}</div>\` : ''}
                             </div>
                         \`;
                     }
