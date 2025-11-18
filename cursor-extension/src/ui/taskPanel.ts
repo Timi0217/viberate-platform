@@ -863,7 +863,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             // All newly claimed tasks are automatically started (in_progress status)
                             annotationForm = renderAnnotationForm(assignment);
                         } else if (status === 'submitted') {
-                            actionButton = '<p style="margin: 0; font-size: 12px; color: #bf8700; line-height: 1.4;">Waiting for approval</p>';
+                            // No text - just icon and badge for uniformity
+                            actionButton = '';
                         } else if (status === 'approved') {
                             // No message needed for approved - badge says it all
                             actionButton = '';
