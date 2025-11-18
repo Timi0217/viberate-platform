@@ -96,12 +96,19 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
             const myAssignments = isAuthenticated ? await this.taskManager.getMyAssignments() : [];
             console.log('[TaskPanel] Assignments fetched:', myAssignments.length);
 
+            // Get and clear the last claimed assignment ID (for auto-expand)
+            const lastClaimedAssignmentId = await this.storage.get<number>('lastClaimedAssignmentId');
+            if (lastClaimedAssignmentId) {
+                await this.storage.delete('lastClaimedAssignmentId');
+            }
+
             console.log('[TaskPanel] Sending data to webview:', {
                 isAuthenticated,
                 availableProjectsCount: availableProjects.length,
                 myAssignmentsCount: myAssignments.length,
                 myAssignments,
-                availableProjects
+                availableProjects,
+                lastClaimedAssignmentId
             });
 
             this._view.webview.postMessage({
@@ -110,7 +117,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     isAuthenticated,
                     user,
                     availableProjects,
-                    myAssignments
+                    myAssignments,
+                    lastClaimedAssignmentId
                 }
             });
             console.log('[TaskPanel] Message posted successfully');
@@ -174,6 +182,9 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
             if (!assignment || !assignment.id) {
                 throw new Error('Assignment was not created properly');
             }
+
+            // Store the newly claimed assignment ID so we can auto-expand it
+            await this.storage.set('lastClaimedAssignmentId', assignment.id);
 
             // Wait a bit for backend to fully process
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -623,14 +634,19 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         console.log('Rendering UI - myAssignments:', myAssignments);
                         if (myAssignments && myAssignments.length > 0) {
                             console.log('Rendering MY ASSIGNMENTS section with', myAssignments.length, 'assignments');
+                            const lastClaimedAssignmentId = currentData.lastClaimedAssignmentId;
+                            const hasExpandedTask = lastClaimedAssignmentId && myAssignments.some(a => a.id === lastClaimedAssignmentId);
+                            const initialMaxHeight = hasExpandedTask ? '800px' : '150px';
+
                             html += \`
                                 <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                                     <h2 style="margin: 0 0 12px 0;">My Tasks</h2>
-                                    <div id="my-tasks-scrollable" style="max-height: 150px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s ease-out;">
+                                    <div id="my-tasks-scrollable" style="max-height: \${initialMaxHeight}; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s ease-out;">
                             \`;
                             myAssignments.forEach(assignment => {
                                 console.log('Rendering assignment:', assignment);
-                                html += renderAssignmentCard(assignment);
+                                const isNewlyClaimed = lastClaimedAssignmentId === assignment.id;
+                                html += renderAssignmentCard(assignment, isNewlyClaimed);
                             });
                             html += '</div></div>'; // Close both the scrollable div and my-assignments-section
                         } else {
@@ -847,7 +863,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         \`;
                     }
 
-                    function renderAssignmentCard(assignment) {
+                    function renderAssignmentCard(assignment, isNewlyClaimed = false) {
                         const task = assignment.task_data || assignment.task || {};
                         const status = assignment.status;
                         const taskData = task.data || {};
@@ -884,10 +900,11 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         const projectTitle = task.project_title || 'Unknown Project';
                         const pricePerTask = task.price_per_task ? parseFloat(task.price_per_task).toFixed(2) : '0.00';
 
-                        // For in_progress assignments, make them collapsible (default collapsed)
+                        // For in_progress assignments, make them collapsible (default collapsed unless newly claimed)
                         if (isInProgress) {
+                            const expandedClass = isNewlyClaimed ? 'expanded' : '';
                             return \`
-                                <div class="task-card assignment-collapsible" data-assignment-id="\${assignment.id}">
+                                <div class="task-card assignment-collapsible \${expandedClass}" data-assignment-id="\${assignment.id}">
                                     <div
                                         data-action="toggle-assignment"
                                         data-assignment-id="\${assignment.id}"
