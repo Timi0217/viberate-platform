@@ -760,12 +760,16 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                     function renderProjectCard(project) {
                         const pricePerTask = parseFloat(project.price_per_task).toFixed(2);
+                        const taskCount = project.available_tasks_count || 0;
 
                         return \`
                             <div class="task-card" style="overflow: visible;">
                                 <div style="display: flex; justify-content: space-between; align-items: stretch; padding: 12px;">
                                     <button data-action="claim-task-from-project" data-project-id="\${project.id}" style="flex: 0 0 auto; width: 200px; margin: 0; padding: 10px 16px; height: auto; min-height: 40px; display: flex; align-items: center; justify-content: center;">Claim Task</button>
-                                    <div style="font-size: 16px; font-weight: 600; color: #2ea043; white-space: nowrap; display: flex; align-items: center; margin-left: auto; padding-left: 12px;">$\${pricePerTask}</div>
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; margin-left: auto; padding-left: 12px; gap: 2px;">
+                                        <div style="font-size: 16px; font-weight: 600; color: #2ea043; white-space: nowrap; line-height: 1;">$\${pricePerTask}</div>
+                                        <div style="font-size: 11px; font-weight: 500; color: var(--vscode-descriptionForeground); white-space: nowrap; line-height: 1;">x \${taskCount}</div>
+                                    </div>
                                 </div>
                             </div>
                         \`;
