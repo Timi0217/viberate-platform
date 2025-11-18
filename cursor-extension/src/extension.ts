@@ -17,7 +17,8 @@ export function activate(context: vscode.ExtensionContext) {
     const taskPanelProvider = new TaskPanelProvider(
         context.extensionUri,
         authManager,
-        taskManager
+        taskManager,
+        storage
     );
 
     context.subscriptions.push(

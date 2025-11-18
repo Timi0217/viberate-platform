@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { AuthManager } from '../api/auth';
 import { TaskManager, Task, TaskAssignment } from '../api/tasks';
 import { getNonce } from '../utils/getNonce';
+import { StorageManager } from '../utils/storage';
 
 export class TaskPanelProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'viberate.taskPanel';
@@ -11,7 +12,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
     constructor(
         private readonly _extensionUri: vscode.Uri,
         private readonly authManager: AuthManager,
-        private readonly taskManager: TaskManager
+        private readonly taskManager: TaskManager,
+        private readonly storage: StorageManager
     ) {}
 
     public resolveWebviewView(
