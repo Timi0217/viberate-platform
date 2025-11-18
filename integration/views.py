@@ -290,6 +290,8 @@ class LabelStudioProjectViewSet(viewsets.ModelViewSet):
                 'title': project.title,
                 'description': project.description,
                 'available_tasks_count': project.available_tasks_count,
+                'total_tasks': project.total_tasks,
+                'completed_tasks': project.completed_tasks,
                 'price_per_task': float(project.price_per_task),
                 'budget_usdc': float(project.budget_usdc),
                 'label_config': label_config,
