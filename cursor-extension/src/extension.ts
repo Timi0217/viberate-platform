@@ -110,8 +110,13 @@ async function handleLogin(
         });
 
         vscode.window.showInformationMessage('Successfully logged in to Viberate!');
+
+        // Start polling for tasks
         taskManager.startPolling();
-        taskPanelProvider.refresh();
+
+        // Wait a moment for auth state to fully settle, then refresh
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await taskPanelProvider.refresh();
     } catch (error: any) {
         vscode.window.showErrorMessage(`Login failed: ${error.message}`);
     }
@@ -188,8 +193,13 @@ async function handleRegister(
         });
 
         vscode.window.showInformationMessage('Account created successfully! You are now logged in.');
+
+        // Start polling for tasks
         taskManager.startPolling();
-        taskPanelProvider.refresh();
+
+        // Wait a moment for auth state to fully settle, then refresh
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await taskPanelProvider.refresh();
     } catch (error: any) {
         vscode.window.showErrorMessage(`Registration failed: ${error.message}`);
     }
