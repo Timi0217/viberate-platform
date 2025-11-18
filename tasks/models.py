@@ -208,6 +208,9 @@ class TaskAssignment(models.Model):
             self.annotator.rating = total_score / self.annotator.tasks_completed
         self.annotator.save(update_fields=['tasks_completed', 'rating'])
 
+        # Update project task counts
+        self.task.project.update_task_counts()
+
         self.save(update_fields=['status', 'quality_score', 'feedback', 'completed_at', 'updated_at'])
 
     def reject(self, feedback=''):
@@ -216,4 +219,8 @@ class TaskAssignment(models.Model):
         self.feedback = feedback
         self.task.status = 'available'  # Make task available again
         self.task.save(update_fields=['status'])
+
+        # Update project task counts (in case it was counted as completed before)
+        self.task.project.update_task_counts()
+
         self.save(update_fields=['status', 'feedback', 'updated_at'])
