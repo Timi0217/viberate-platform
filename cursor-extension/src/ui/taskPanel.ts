@@ -349,6 +349,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         text-transform: uppercase;
                         letter-spacing: 0.3px;
                         line-height: 1;
+                        min-width: 110px;
                     }
                     .badge.available { background-color: #2ea043; color: white; }
                     .badge.in_progress { background-color: #bf8700; color: white; }
@@ -618,8 +619,8 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         if (myAssignments && myAssignments.length > 0) {
                             console.log('Rendering MY ASSIGNMENTS section with', myAssignments.length, 'assignments');
                             html += \`
-                                <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-                                    <h2 style="margin: 0 0 12px 0;">📋 My Assignments (\${myAssignments.length})</h2>
+                                <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px; max-height: 400px; overflow-y: auto;">
+                                    <h2 style="margin: 0 0 12px 0;">My Tasks</h2>
                             \`;
                             myAssignments.forEach(assignment => {
                                 console.log('Rendering assignment:', assignment);
@@ -632,7 +633,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                         // Available projects section
                         html += '<div class="section-divider"></div>';
-                        html += '<h2>Available Projects</h2>';
+                        html += '<h2>Available Tasks</h2>';
                         if (availableProjects && availableProjects.length > 0) {
                             console.log('Available projects received:', availableProjects.length, availableProjects);
 
@@ -762,9 +763,9 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                         return \`
                             <div class="task-card" style="overflow: visible;">
-                                <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 12px; padding: 12px;">
-                                    <button data-action="claim-task-from-project" data-project-id="\${project.id}" style="flex: 1; margin: 0; padding: 10px 16px; height: auto; min-height: 40px; display: flex; align-items: center; justify-content: center;">Claim Task</button>
-                                    <div style="font-size: 16px; font-weight: 600; color: #2ea043; white-space: nowrap; display: flex; align-items: center;">$\${pricePerTask}</div>
+                                <div style="display: flex; justify-content: space-between; align-items: stretch; padding: 12px;">
+                                    <button data-action="claim-task-from-project" data-project-id="\${project.id}" style="flex: 0 0 auto; width: 200px; margin: 0; padding: 10px 16px; height: auto; min-height: 40px; display: flex; align-items: center; justify-content: center;">Claim Task</button>
+                                    <div style="font-size: 16px; font-weight: 600; color: #2ea043; white-space: nowrap; display: flex; align-items: center; margin-left: auto; padding-left: 12px;">$\${pricePerTask}</div>
                                 </div>
                             </div>
                         \`;
