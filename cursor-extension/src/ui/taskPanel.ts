@@ -72,8 +72,17 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
     }
 
     public async refresh() {
+        console.log('[TaskPanel] Refresh called');
+
+        // Make sure the view is visible
+        if (this._view) {
+            this._view.show?.(true); // true = preserve focus
+        }
+
         await this.taskManager.refreshTasks();
         await this.sendDataToWebview();
+
+        console.log('[TaskPanel] Refresh complete');
     }
 
     private async sendDataToWebview() {

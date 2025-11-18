@@ -114,8 +114,11 @@ async function handleLogin(
         // Start polling for tasks
         taskManager.startPolling();
 
-        // Wait a moment for auth state to fully settle, then refresh
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Show the Viberate view in the sidebar
+        await vscode.commands.executeCommand('viberate.taskPanel.focus');
+
+        // Wait a moment for view to be visible, then refresh
+        await new Promise(resolve => setTimeout(resolve, 500));
         await taskPanelProvider.refresh();
     } catch (error: any) {
         vscode.window.showErrorMessage(`Login failed: ${error.message}`);
@@ -197,8 +200,11 @@ async function handleRegister(
         // Start polling for tasks
         taskManager.startPolling();
 
-        // Wait a moment for auth state to fully settle, then refresh
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Show the Viberate view in the sidebar
+        await vscode.commands.executeCommand('viberate.taskPanel.focus');
+
+        // Wait a moment for view to be visible, then refresh
+        await new Promise(resolve => setTimeout(resolve, 500));
         await taskPanelProvider.refresh();
     } catch (error: any) {
         vscode.window.showErrorMessage(`Registration failed: ${error.message}`);
