@@ -626,7 +626,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             html += \`
                                 <div id="my-assignments-section" style="background: linear-gradient(135deg, rgba(46, 160, 67, 0.1) 0%, rgba(46, 160, 67, 0.05) 100%); border: 2px solid #2ea043; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                                     <h2 style="margin: 0 0 12px 0;">My Tasks</h2>
-                                    <div style="max-height: 150px; overflow-y: auto; overflow-x: hidden;">
+                                    <div id="my-tasks-scrollable" style="max-height: 150px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s ease-out;">
                             \`;
                             myAssignments.forEach(assignment => {
                                 console.log('Rendering assignment:', assignment);
@@ -768,6 +768,14 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                             console.log('[Event] Current classes:', assignmentCard.className);
                                             assignmentCard.classList.toggle('expanded');
                                             console.log('[Event] New classes:', assignmentCard.className);
+
+                                            // Adjust My Tasks container height based on expanded state
+                                            const scrollableContainer = document.getElementById('my-tasks-scrollable');
+                                            if (scrollableContainer) {
+                                                const hasExpandedTasks = document.querySelector('.assignment-collapsible.expanded') !== null;
+                                                // If any task is expanded, increase max-height; otherwise restore default
+                                                scrollableContainer.style.maxHeight = hasExpandedTasks ? '800px' : '150px';
+                                            }
                                         }
                                         return;
                                     }
