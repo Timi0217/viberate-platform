@@ -266,6 +266,7 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         font-size: var(--vscode-font-size);
                         font-family: var(--vscode-font-family);
                         margin: 0;
+                        min-width: 520px;
                     }
                     .container {
                         margin-bottom: 16px;
@@ -304,16 +305,17 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     }
                     .task-card {
                         border: 1px solid var(--vscode-panel-border);
-                        padding: 14px;
-                        margin-bottom: 12px;
+                        padding: 0;
+                        margin-bottom: 10px;
                         border-radius: 8px;
                         background-color: var(--vscode-editor-background);
-                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
                         transition: all 0.2s ease;
+                        overflow: hidden;
                     }
                     .task-card:hover {
                         border-color: var(--vscode-focusBorder);
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
                     }
                     .task-card.expanded .task-details {
                         max-height: 2000px !important;
@@ -338,12 +340,15 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                     .badge {
                         display: inline-flex;
                         align-items: center;
+                        justify-content: center;
                         gap: 4px;
-                        padding: 4px 10px;
-                        border-radius: 12px;
+                        padding: 6px 12px;
+                        border-radius: 6px;
                         font-size: 11px;
                         font-weight: 600;
-                        margin: 4px 0;
+                        text-transform: uppercase;
+                        letter-spacing: 0.3px;
+                        line-height: 1;
                     }
                     .badge.available { background-color: #2ea043; color: white; }
                     .badge.in_progress { background-color: #bf8700; color: white; }
@@ -474,6 +479,19 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                         height: 1px;
                         background-color: var(--vscode-panel-border);
                         margin: 16px 0;
+                    }
+                    .assignment-collapsible .assignment-details {
+                        max-height: 0;
+                        overflow: hidden;
+                    }
+                    .assignment-collapsible.expanded .assignment-details {
+                        max-height: 5000px;
+                    }
+                    .assignment-collapsible.expanded .chevron {
+                        transform: rotate(0deg);
+                    }
+                    .assignment-collapsible:not(.expanded) .chevron {
+                        transform: rotate(-90deg);
                     }
                 </style>
             </head>
@@ -725,6 +743,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                                             taskCard.classList.toggle('expanded');
                                         }
                                         return;
+                                    } else if (action === 'toggle-assignment') {
+                                        // Find the assignment card (parent element)
+                                        const assignmentCard = target.closest('.assignment-collapsible');
+                                        if (assignmentCard) {
+                                            assignmentCard.classList.toggle('expanded');
+                                        }
+                                        return;
                                     }
                                 }
                                 target = target.parentElement;
@@ -734,23 +759,13 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
 
                     function renderProjectCard(project) {
                         const pricePerTask = parseFloat(project.price_per_task).toFixed(2);
-                        const taskCount = project.available_tasks_count;
 
                         return \`
                             <div class="task-card" style="overflow: visible;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <div style="flex: 1;">
-                                        <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--vscode-foreground);">\${escapeHtml(project.title)}</h3>
-                                        <div style="margin-top: 6px; font-size: 12px; color: var(--vscode-descriptionForeground);">
-                                            \${taskCount} task\${taskCount !== 1 ? 's' : ''} available
-                                        </div>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <div style="font-size: 16px; font-weight: 600; color: #2ea043; margin-bottom: 4px;">$\${pricePerTask}</div>
-                                        <div style="font-size: 11px; color: var(--vscode-descriptionForeground);">USDC / task</div>
-                                    </div>
+                                <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 12px; padding: 12px;">
+                                    <button data-action="claim-task-from-project" data-project-id="\${project.id}" style="flex: 1; margin: 0; padding: 10px 16px; height: auto; min-height: 40px; display: flex; align-items: center; justify-content: center;">Claim Task</button>
+                                    <div style="font-size: 16px; font-weight: 600; color: #2ea043; white-space: nowrap; display: flex; align-items: center;">$\${pricePerTask}</div>
                                 </div>
-                                <button data-action="claim-task-from-project" data-project-id="\${project.id}" style="width: 100%;">Claim Task</button>
                             </div>
                         \`;
                     }
@@ -818,34 +833,67 @@ export class TaskPanelProvider implements vscode.WebviewViewProvider {
                             cancelButton = \`<button data-action="cancel-assignment" data-assignment-id="\${assignment.id}" class="secondary" style="margin-top: 8px;">Cancel Assignment</button>\`;
                         }
 
-                        if (status === 'assigned' || status === 'accepted' || status === 'in_progress') {
+                        const isInProgress = status === 'assigned' || status === 'accepted' || status === 'in_progress';
+
+                        if (isInProgress) {
                             // All newly claimed tasks are automatically started (in_progress status)
                             annotationForm = renderAnnotationForm(assignment);
                         } else if (status === 'submitted') {
-                            actionButton = '<p style="color: #bf8700;">⏳ Waiting for researcher approval...</p>';
+                            actionButton = '<p style="margin: 0; font-size: 12px; color: #bf8700; line-height: 1.4;">⏳ Waiting for approval</p>';
                         } else if (status === 'approved') {
-                            actionButton = '<p style="color: #2ea043;">✅ Approved! Payment processed.</p>';
+                            // No message needed for approved - badge says it all
+                            actionButton = '';
                         } else if (status === 'rejected') {
                             const feedback = assignment.feedback || 'No feedback provided';
-                            actionButton = \`<p style="color: #d73a49;">❌ Rejected. Reason: \${escapeHtml(feedback)}</p>\`;
+                            actionButton = \`<p style="margin: 0; font-size: 12px; color: #d73a49; line-height: 1.4;">❌ Rejected: \${escapeHtml(feedback)}</p>\`;
                         }
 
                         const projectTitle = task.project_title || 'Unknown Project';
                         const pricePerTask = task.price_per_task ? parseFloat(task.price_per_task).toFixed(2) : '0.00';
 
+                        // For in_progress assignments, make them collapsible
+                        if (isInProgress) {
+                            return \`
+                                <div class="task-card assignment-collapsible expanded" data-assignment-id="\${assignment.id}" style="padding: 16px;">
+                                    <div
+                                        data-action="toggle-assignment"
+                                        data-assignment-id="\${assignment.id}"
+                                        style="cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; padding: 8px 0;"
+                                    >
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" class="chevron" style="transition: transform 0.2s; flex-shrink: 0;">
+                                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            <span class="badge \${status}" style="margin: 0;">\${escapeHtml(status)}</span>
+                                        </div>
+                                        <span style="font-size: 16px; font-weight: 600; color: #2ea043; line-height: 1;">$\${pricePerTask}</span>
+                                    </div>
+                                    <div class="assignment-details" style="overflow: hidden; transition: max-height 0.3s ease-out;">
+                                        \${mediaHtml}
+                                        \${annotationForm}
+                                        \${cancelButton}
+                                    </div>
+                                </div>
+                            \`;
+                        }
+
+                        // For other statuses, render minimal compact format
+                        // Add icon for approved status to maintain alignment with in_progress chevron
+                        const statusIcon = status === 'approved'
+                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0; color: #2ea043;"><path d="M20 6L9 17l-5-5"/></svg>'
+                            : '<div style="width: 14px; flex-shrink: 0;"></div>';
+
                         return \`
-                            <div class="task-card">
-                                <h3>Assignment #\${assignment.id}</h3>
-                                <div style="font-size: 12px; color: var(--vscode-descriptionForeground); margin-bottom: 4px;">
-                                    Project: \${escapeHtml(projectTitle)}
+                            <div class="task-card" style="padding: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        \${statusIcon}
+                                        <span class="badge \${status}" style="margin: 0;">\${escapeHtml(status)}</span>
+                                    </div>
+                                    <span style="font-size: 16px; font-weight: 600; color: #2ea043; line-height: 1;">$\${pricePerTask}</span>
                                 </div>
-                                <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
-                                    <span class="badge \${status}">\${escapeHtml(status)}</span>
-                                    <span style="font-size: 13px; font-weight: 600; color: #2ea043;">$\${pricePerTask} USDC</span>
-                                </div>
+                                \${actionButton ? \`<div style="margin-top: 8px;">\${actionButton}</div>\` : ''}
                                 \${mediaHtml}
-                                \${annotationForm}
-                                \${actionButton}
                                 \${cancelButton}
                             </div>
                         \`;

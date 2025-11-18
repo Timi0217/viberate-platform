@@ -904,28 +904,15 @@ function App() {
                     height: '100%'
                   }}>
                     {/* Header with checkbox */}
-                    <div style={{ marginBottom: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleAssignmentSelection(assignment.id)}
-                          style={{ width: '16px', height: '16px', cursor: 'pointer', flexShrink: 0 }}
-                        />
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
-                          Assignment #{assignment.id}
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px', lineHeight: '1.4' }}>
-                        {assignment.task_data?.project_title || 'Unknown Project'}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#0066ff' }}>
-                          ${defaultPrice.toFixed(2)}
-                        </span>
-                        <span style={{ fontSize: '11px', color: '#999' }}>
-                          {assignment.submitted_at ? new Date(assignment.submitted_at).toLocaleDateString() : 'Unknown'}
-                        </span>
+                    <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleAssignmentSelection(assignment.id)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer', flexShrink: 0 }}
+                      />
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                        #{assignment.id}
                       </div>
                     </div>
 
@@ -936,11 +923,13 @@ function App() {
                           Task
                         </div>
                         {taskData.image && (
-                          <img
-                            src={taskData.image}
-                            alt="Task"
-                            style={{ width: '100%', height: 'auto', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: taskData.text ? '6px' : '0' }}
-                          />
+                          <div style={{ maxHeight: '200px', overflow: 'auto', marginBottom: taskData.text ? '6px' : '0' }}>
+                            <img
+                              src={taskData.image}
+                              alt="Task"
+                              style={{ width: '100%', height: 'auto', borderRadius: '4px', display: 'block' }}
+                            />
+                          </div>
                         )}
                         {taskData.text && (
                           <div style={{ fontSize: '12px', color: '#555', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
@@ -985,7 +974,7 @@ function App() {
                           backgroundColor: '#0066ff',
                           color: 'white',
                           border: 'none',
-                          borderRadius: '4px',
+                          borderRadius: '8px',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
                           opacity: loading ? 0.6 : 1,
@@ -1011,7 +1000,7 @@ function App() {
                           backgroundColor: 'transparent',
                           color: '#999',
                           border: 'none',
-                          borderRadius: '4px',
+                          borderRadius: '8px',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
                           opacity: loading ? 0.6 : 1,
