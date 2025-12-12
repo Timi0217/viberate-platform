@@ -10,6 +10,7 @@ from .cookie_auth import set_auth_cookie, clear_auth_cookie
 from wallet.wallet_service import WalletService
 from tasks.audit_utils import log_audit
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,208 @@ def login_view(request):
     )
 
     return response
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def github_login_view(request):
+    """Login or register using GitHub OAuth token or authorization code."""
+    access_token = request.data.get('access_token')
+    code = request.data.get('code')
+
+    # If code is provided, exchange it for access token
+    if code and not access_token:
+        try:
+            token_url = 'https://github.com/login/oauth/access_token'
+            data = {
+                'client_id': settings.GITHUB_OAUTH_CLIENT_ID,
+                'client_secret': settings.GITHUB_OAUTH_CLIENT_SECRET,
+                'code': code,
+            }
+            headers = {'Accept': 'application/json'}
+
+            token_response = requests.post(token_url, data=data, headers=headers)
+
+            if token_response.status_code != 200:
+                logger.error(f"GitHub token exchange failed: {token_response.text}")
+                return Response(
+                    {'error': 'Failed to exchange code for token'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            token_data = token_response.json()
+
+            if 'error' in token_data:
+                logger.error(f"GitHub OAuth error: {token_data.get('error_description', token_data['error'])}")
+                return Response(
+                    {'error': token_data.get('error_description', 'OAuth exchange failed')},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            access_token = token_data.get('access_token')
+
+            if not access_token:
+                return Response(
+                    {'error': 'No access token received from GitHub'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except requests.RequestException as e:
+            logger.error(f"GitHub API error during token exchange: {e}")
+            return Response(
+                {'error': 'Failed to communicate with GitHub API'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+    if not access_token:
+        return Response(
+            {'error': 'GitHub access token or authorization code is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        # Verify token and get user info from GitHub
+        headers = {
+            'Authorization': f'token {access_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+
+        # Get user info
+        github_response = requests.get('https://api.github.com/user', headers=headers)
+
+        if github_response.status_code != 200:
+            log_audit(
+                action_type='auth.github_login',
+                user=None,
+                details={'success': False, 'error': 'Invalid GitHub token'},
+                request=request,
+                success=False,
+                error_message='Invalid GitHub token'
+            )
+            return Response(
+                {'error': 'Invalid GitHub access token'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        github_user = github_response.json()
+        github_id = github_user.get('id')
+        github_login = github_user.get('login')
+        github_email = github_user.get('email')
+        github_name = github_user.get('name', '')
+
+        # Get primary email if not public
+        if not github_email:
+            emails_response = requests.get('https://api.github.com/user/emails', headers=headers)
+            if emails_response.status_code == 200:
+                emails = emails_response.json()
+                for email_data in emails:
+                    if email_data.get('primary'):
+                        github_email = email_data.get('email')
+                        break
+
+        if not github_email:
+            github_email = f"{github_login}@users.noreply.github.com"
+
+        # Try to find existing user by GitHub ID or email
+        user = None
+        try:
+            user = User.objects.get(github_id=github_id)
+            # Ensure user is set as annotator for extension
+            if user.user_type != 'annotator':
+                user.user_type = 'annotator'
+                user.save()
+        except User.DoesNotExist:
+            try:
+                user = User.objects.get(email=github_email)
+                # Link GitHub account and ensure user is an annotator
+                user.github_id = github_id
+                user.github_username = github_login
+                user.user_type = 'annotator'  # Ensure user is set as annotator for extension
+                user.save()
+            except User.DoesNotExist:
+                # Create new user
+                username = github_login
+                # Ensure unique username
+                base_username = username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+
+                # Parse name
+                first_name = ''
+                last_name = ''
+                if github_name:
+                    name_parts = github_name.split(' ', 1)
+                    first_name = name_parts[0]
+                    if len(name_parts) > 1:
+                        last_name = name_parts[1]
+
+                user = User.objects.create_user(
+                    username=username,
+                    email=github_email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    user_type='annotator',
+                    github_id=github_id,
+                    github_username=github_login,
+                    password=None  # No password for OAuth users
+                )
+                user.set_unusable_password()  # Mark that password login is not available
+                user.save()
+
+                log_audit(
+                    action_type='auth.github_register',
+                    user=user,
+                    details={
+                        'username': username,
+                        'github_id': github_id,
+                        'github_username': github_login
+                    },
+                    request=request,
+                    success=True
+                )
+
+        # Create token for extension
+        token, _ = Token.objects.get_or_create(user=user)
+
+        # Create response with user data
+        response_data = {
+            'user': UserSerializer(user).data,
+            'token': token.key,
+            'message': 'GitHub login successful'
+        }
+        response = Response(response_data)
+
+        # Set httpOnly authentication cookie
+        set_auth_cookie(response, user)
+
+        # Log successful login
+        log_audit(
+            action_type='auth.github_login',
+            user=user,
+            details={
+                'username': user.username,
+                'github_id': github_id,
+                'github_username': github_login
+            },
+            request=request,
+            success=True
+        )
+
+        return response
+
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error: {e}")
+        return Response(
+            {'error': 'Failed to communicate with GitHub API'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    except Exception as e:
+        logger.error(f"GitHub login error: {e}")
+        return Response(
+            {'error': 'An error occurred during GitHub login'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
