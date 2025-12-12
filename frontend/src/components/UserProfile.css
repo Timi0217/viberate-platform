@@ -5,11 +5,14 @@
 }
 
 .profile-header {
-  background: transparent;
+  background: rgba(26, 31, 46, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 24px 0;
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .profile-header-content {
