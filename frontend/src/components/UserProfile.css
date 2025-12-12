@@ -277,7 +277,7 @@
 
 .metric-bar-container {
   position: absolute;
-  bottom: 8px;
+  bottom: 16px;
   left: 12px;
   right: 12px;
   height: 6px;
