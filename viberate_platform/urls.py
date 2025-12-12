@@ -17,13 +17,23 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from users.auth_views import login_view, register_view, logout_view, profile_view, delete_all_users_view
+from users.auth_views import (
+    login_view,
+    register_view,
+    logout_view,
+    profile_view,
+    delete_all_users_view,
+    github_login_view
+)
+from users.github_oauth_views import github_oauth_exchange
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Authentication
     path("api/auth/login/", login_view, name='login'),
+    path("api/auth/github/", github_login_view, name='github_login'),
+    path("api/auth/github/exchange/", github_oauth_exchange, name='github_oauth_exchange'),
     path("api/auth/register/", register_view, name='register'),
     path("api/auth/logout/", logout_view, name='logout'),
     path("api/auth/profile/", profile_view, name='profile'),
